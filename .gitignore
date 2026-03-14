@@ -1,0 +1,13 @@
+.env
+.env.local
+
+node_modules
+.next
+out
+
+__pycache__
+*.pyc
+venv
+
+.DS_Store
+Thumbs.db
