@@ -29,15 +29,12 @@ def create_chat_session(db: Session, project_id: UUID):
 
 
 def _build_context(db: Session, project_id: UUID, session_id: UUID, user_message: str):
-    """Shared logic: guard, persist user msg, retrieve context, build prompt."""
     project = db.query(Project).filter(Project.id == project_id).first()
     if not project or not project.is_trained:
         raise HTTPException(status_code=400, detail="Project is not trained yet")
 
-    project_path = DATA_ROOT / str(project_id)
-    index_path = project_path / "intelligence" / "faiss.index"
-    if not index_path.exists():
-        raise HTTPException(status_code=500, detail="Training artifacts missing. Re-train project.")
+    # ✅ CHANGED: no longer check local disk for faiss.index
+    # (index now lives in Supabase Storage)
 
     # Persist user message
     user_msg = ChatMessage(session_id=session_id, role="user", content=user_message)
@@ -55,8 +52,9 @@ def _build_context(db: Session, project_id: UUID, session_id: UUID, user_message
         {"role": m.role, "content": m.content} for m in previous_messages
     ])
 
-    # Retrieval
-    retrieved = retrieve_context(project_path, user_message)
+    # ✅ CHANGED: pass str(project_id) instead of project_path
+    retrieved = retrieve_context(str(project_id), user_message)
+
     incident_blocks = [
         {
             "incident_id": r.get("incident_id"),
@@ -98,7 +96,7 @@ def post_message(db: Session, project_id: UUID, session_id: UUID, user_message: 
     db.commit()
 
     record_event(db, project_id, "chat_message_sent")
-    record_event(db, project_id, "ai_call")   # ← add this
+    record_event(db, project_id, "ai_call")
     return assistant_msg
 
 
@@ -108,10 +106,6 @@ def stream_message(
     session_id: UUID,
     user_message: str
 ) -> Generator[str, None, None]:
-    """
-    Streams Gemini response token-by-token.
-    Accumulates the full text and persists it to DB once complete.
-    """
     prompt = _build_context(db, project_id, session_id, user_message)
 
     model = genai.GenerativeModel(model_name=CHAT_MODEL)
@@ -124,7 +118,6 @@ def stream_message(
             full_text += token
             yield token
 
-    # Persist completed assistant message after stream ends
     assistant_msg = ChatMessage(
         session_id=session_id,
         role="assistant",
@@ -134,4 +127,4 @@ def stream_message(
     db.commit()
 
     record_event(db, project_id, "chat_message_sent")
-    record_event(db, project_id, "ai_call") 
+    record_event(db, project_id, "ai_call")

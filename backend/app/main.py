@@ -1,25 +1,28 @@
 from fastapi import FastAPI
-from app.api import auth
-from app.core.database import Base, engine
 from app.api import auth, projects, uploads
 from app.api.chat import router as chat_router
 from app.api.analytics import router as analytics_router
-from fastapi.middleware.cors import CORSMiddleware
 from app.api.training import router as training_router
+from app.core.database import Base, engine
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Incident Intelligence API")
 
-
 Base.metadata.create_all(bind=engine)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://your-app.vercel.app",        # ← add this after Vercel deployment
+        "https://your-app-git-main-xxx.vercel.app",  # ← Vercel preview URL (optional)
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
