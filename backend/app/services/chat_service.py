@@ -2,7 +2,7 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 from uuid import UUID
 from typing import Generator
-import google.generativeai as genai
+from google import genai
 from fastapi import HTTPException
 
 from app.core.config import GEMINI_API_KEY
@@ -13,8 +13,8 @@ from app.services.chat_context import build_conversation_state
 from app.intelligence.retriever import retrieve_context
 from app.intelligence.prompt_builder import build_prompt
 
-genai.configure(api_key=GEMINI_API_KEY)
-
+from google.genai import types
+client = genai.Client(api_key=GEMINI_API_KEY)
 CHAT_MODEL = "gemini-2.5-flash"
 DATA_ROOT = Path("data/projects")
 
@@ -85,7 +85,10 @@ def post_message(db: Session, project_id: UUID, session_id: UUID, user_message: 
     prompt = _build_context(db, project_id, session_id, user_message)
 
     model = genai.GenerativeModel(model_name=CHAT_MODEL)
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model=CHAT_MODEL,
+        contents=prompt
+    )
 
     assistant_msg = ChatMessage(
         session_id=session_id,
@@ -108,11 +111,13 @@ def stream_message(
 ) -> Generator[str, None, None]:
     prompt = _build_context(db, project_id, session_id, user_message)
 
-    model = genai.GenerativeModel(model_name=CHAT_MODEL)
-    response = model.generate_content(prompt, stream=True)
 
     full_text = ""
-    for chunk in response:
+     # OLD: response = model.generate_content(prompt, stream=True)
+    for chunk in client.models.generate_content_stream(
+        model=CHAT_MODEL,
+        contents=prompt
+    ):
         token = chunk.text or ""
         if token:
             full_text += token
