@@ -21,7 +21,7 @@ app.add_middleware(
         "http://127.0.0.1:3000",
         "https://anky-p8od.vercel.app",  # ← your real Vercel URL
     ],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
