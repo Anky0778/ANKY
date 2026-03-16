@@ -22,3 +22,4 @@ tqdm
 google-genai
 langdetect
 deep-translator
+bcrypt
