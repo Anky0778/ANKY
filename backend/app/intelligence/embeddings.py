@@ -88,14 +88,15 @@ def embed_query(query: str) -> list[float]:
 import unicodedata
 import os
 from fastapi import HTTPException
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from langdetect import detect
 from deep_translator import GoogleTranslator
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMBED_MODEL = "models/text-embedding-004"
+EMBED_MODEL = "text-embedding-004"  # ✅ NO "models/" prefix with google-genai SDK
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 translator = GoogleTranslator(source="auto", target="en")
 
 
@@ -131,15 +132,16 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
             batch = processed_texts[i: i + batch_size]
             print(f"⚙️ Embedding batch {i // batch_size + 1} ({len(batch)} texts)...")
 
-            # ✅ google-generativeai SDK uses v1 — no more v1beta 404
-            result = genai.embed_content(
-                model=EMBED_MODEL,
-                content=batch,
-                task_type="retrieval_document",
+            response = client.models.embed_content(
+                model=EMBED_MODEL,   # ✅ "text-embedding-004" not "models/text-embedding-004"
+                contents=batch,
+                config=types.EmbedContentConfig(
+                    task_type="RETRIEVAL_DOCUMENT",
+                )
             )
 
-            for vec in result["embedding"]:
-                all_vectors.append(vec)
+            for embedding in response.embeddings:
+                all_vectors.append(embedding.values)
 
         print(f"✅ Embedded {len(all_vectors)} chunks using {EMBED_MODEL}")
         return all_vectors
@@ -156,13 +158,15 @@ def embed_query(query: str) -> list[float]:
         q = normalize_text(query)
         q = translate_to_english(q)
 
-        result = genai.embed_content(
+        response = client.models.embed_content(
             model=EMBED_MODEL,
-            content=q,
-            task_type="retrieval_query",  # ✅ correct task type for queries
+            contents=q,
+            config=types.EmbedContentConfig(
+                task_type="RETRIEVAL_QUERY",  # ✅ different task type for queries
+            )
         )
 
-        return result["embedding"]
+        return response.embeddings[0].values
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query embedding failed: {e}")
