@@ -1,4 +1,4 @@
-import unicodedata
+"""import unicodedata
 import os
 from fastapi import HTTPException
 from google import genai
@@ -81,6 +81,88 @@ def embed_query(query: str) -> list[float]:
         )
 
         return response.embeddings[0].values
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Query embedding failed: {e}")
+"""
+import unicodedata
+import os
+from fastapi import HTTPException
+import google.generativeai as genai
+from langdetect import detect
+from deep_translator import GoogleTranslator
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+EMBED_MODEL = "models/text-embedding-004"
+
+genai.configure(api_key=GEMINI_API_KEY)
+translator = GoogleTranslator(source="auto", target="en")
+
+
+def normalize_text(text: str) -> str:
+    return unicodedata.normalize("NFKC", text).strip()
+
+
+def translate_to_english(text: str) -> str:
+    try:
+        lang = detect(text)
+        if lang == "en":
+            return text
+        return translator.translate(text)
+    except Exception:
+        return text
+
+
+def embed_texts(texts: list[str]) -> list[list[float]]:
+    if not texts:
+        raise HTTPException(status_code=500, detail="No texts provided for embedding")
+
+    processed_texts = []
+    for t in texts:
+        t = normalize_text(t)
+        t = translate_to_english(t)
+        processed_texts.append(t)
+
+    try:
+        all_vectors = []
+        batch_size = 100
+
+        for i in range(0, len(processed_texts), batch_size):
+            batch = processed_texts[i: i + batch_size]
+            print(f"⚙️ Embedding batch {i // batch_size + 1} ({len(batch)} texts)...")
+
+            # ✅ google-generativeai SDK uses v1 — no more v1beta 404
+            result = genai.embed_content(
+                model=EMBED_MODEL,
+                content=batch,
+                task_type="retrieval_document",
+            )
+
+            for vec in result["embedding"]:
+                all_vectors.append(vec)
+
+        print(f"✅ Embedded {len(all_vectors)} chunks using {EMBED_MODEL}")
+        return all_vectors
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Embedding failed: {e}")
+
+
+def embed_query(query: str) -> list[float]:
+    if not query.strip():
+        raise HTTPException(status_code=400, detail="Empty query")
+
+    try:
+        q = normalize_text(query)
+        q = translate_to_english(q)
+
+        result = genai.embed_content(
+            model=EMBED_MODEL,
+            content=q,
+            task_type="retrieval_query",  # ✅ correct task type for queries
+        )
+
+        return result["embedding"]
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query embedding failed: {e}")

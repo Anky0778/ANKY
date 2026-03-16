@@ -23,3 +23,4 @@ google-genai
 langdetect
 deep-translator
 bcrypt
+google-generativeai>=0.8.0
