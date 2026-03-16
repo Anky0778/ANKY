@@ -1,15 +1,16 @@
-from passlib.context import CryptContext
+import bcrypt
 from jose import jwt
 from datetime import datetime, timedelta
 from app.core.config import JWT_SECRET, JWT_ALGORITHM
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    password_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password_bytes, salt).decode("utf-8")
 
 def verify_password(password: str, hashed: str) -> bool:
-    return pwd_context.verify(password, hashed)
+    password_bytes = password.encode("utf-8")[:72]
+    return bcrypt.checkpw(password_bytes, hashed.encode("utf-8"))
 
 def create_access_token(data: dict, expires_minutes: int = 60):
     to_encode = data.copy()
