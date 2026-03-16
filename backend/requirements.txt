@@ -4,7 +4,6 @@ sqlalchemy
 psycopg2-binary
 pydantic
 python-jose
-passlib[bcrypt]
 python-dotenv
 pandas
 pyarrow
@@ -16,11 +15,9 @@ python-docx
 pypdf
 email-validator
 supabase
-psycopg2-binary
 python-multipart
 faiss-cpu
 python-jose[cryptography]
-passlib[bcrypt]
 tqdm
 google-genai
 langdetect
