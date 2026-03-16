@@ -19,8 +19,9 @@ supabase
 psycopg2-binary
 python-multipart
 faiss-cpu
-sentence-transformers
 python-jose[cryptography]
 passlib[bcrypt]
 tqdm
 google-genai
+langdetect
+deep-translator
