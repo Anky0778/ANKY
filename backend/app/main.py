@@ -19,7 +19,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "anky-p8od-4mwlc7qt2-aniket-kumar-ojhas-projects.vercel.app",  # ← your real Vercel URL
+        "https://anky-p8od.vercel.app",  # ← your real Vercel URL
     ],
     allow_credentials=False,
     allow_methods=["*"],
