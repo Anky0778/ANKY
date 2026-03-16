@@ -16,7 +16,11 @@ except Exception as e:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "anky-p8od-4mwlc7qt2-aniket-kumar-ojhas-projects.vercel.app",  # ← your real Vercel URL
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
