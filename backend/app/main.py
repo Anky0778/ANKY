@@ -8,7 +8,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Incident Intelligence API")
 
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    print("✅ Database tables created/verified")
+except Exception as e:
+    print(f"⚠️ Could not connect to database on startup: {e}")
 
 app.add_middleware(
     CORSMiddleware,
