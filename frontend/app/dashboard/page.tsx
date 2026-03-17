@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchProjects, createProject, deleteProject } from "app/services/projects";
 import { useAuth } from "app/hooks/useAuth";
-
+const [isLoadingProjects, setIsLoadingProjects] = useState(true); // ✅ start as true
 export default function Dashboard() {
   const { isAuthenticated, isLoading, logout } = useAuth();
 
@@ -45,15 +45,32 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-
-    fetchProjects()
-      .then((data) => setProjects(data))
-      .catch(() => setError("Failed to load workspaces"));
-  }, [isAuthenticated]);
+  if (!isAuthenticated) return;
+  setIsLoadingProjects(true);
+  fetchProjects()
+    .then((data) => setProjects(data))
+    .catch(() => setError("Failed to load workspaces"))
+    .finally(() => setIsLoadingProjects(false)); // ✅ only show UI after fetch completes
+}, [isAuthenticated]);
 
   if (isLoading) return null;
-  if (!isAuthenticated) return null;
+if (!isAuthenticated) return null;
+if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
+  <div style={{
+    minHeight: "100vh",
+    background: "#0f172a",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "white",
+    fontSize: "18px",
+    gap: "12px",
+  }}>
+    <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
+    Loading workspaces...
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </div>
+);
 
   async function handleCreate() {
     if (!form.name.trim()) return;
