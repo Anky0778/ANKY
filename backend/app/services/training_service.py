@@ -268,7 +268,14 @@ Resolution: {row['resolution_notes']}"""
 
     # ── Step 5: FAISS index ───────────────────────────────────────────────────
     yield {"step": "indexing", "message": "Building FAISS vector index..."}
-
+    # ── Clear old FAISS index before rebuilding ───────────────────────────────
+    print("🗑️ Clearing old FAISS index...")
+    try:
+        old_files = sb.storage.from_("faiss-indexes").list(project_id_str)
+        for f in old_files or []:
+            sb.storage.from_("faiss-indexes").remove([f"{project_id_str}/{f['name']}"])
+    except Exception as e:
+        print(f"⚠️ Could not clear old index (may not exist): {e}")
     try:
         build_and_save_index(vectors, metadata, project_id_str)
     except Exception as e:

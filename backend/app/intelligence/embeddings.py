@@ -94,13 +94,9 @@ from langdetect import detect
 from deep_translator import GoogleTranslator
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMBED_MODEL = "text-embedding-004"
+EMBED_MODEL = "gemini-embedding-001"  # ✅ text-embedding-004 was deprecated Jan 14 2026
 
-# ✅ Force stable v1 API — default is v1beta which doesn't support this model
-client = genai.Client(
-    api_key=GEMINI_API_KEY,
-    http_options=types.HttpOptions(api_version="v1")
-)
+client = genai.Client(api_key=GEMINI_API_KEY)  # no http_options needed
 translator = GoogleTranslator(source="auto", target="en")
 
 
