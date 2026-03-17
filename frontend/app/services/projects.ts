@@ -15,3 +15,8 @@ export async function fetchProjectById(projectId: string) {
   const res = await api.get(`/projects/${projectId}`);
   return res.data;
 }
+
+export async function deleteProject(projectId: string) {
+  const res = await api.delete(`/projects/${projectId}`);
+  return res.data;
+}

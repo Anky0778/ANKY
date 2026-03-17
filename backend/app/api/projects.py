@@ -7,7 +7,8 @@ from app.utils.auth_dependency import get_current_user
 from app.services.project_service import (
     create_project,
     get_user_projects,
-    get_project_by_id
+    get_project_by_id,
+    delete_project   
 )
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -39,3 +40,13 @@ def get_project(
     user = Depends(get_current_user)
 ):
     return get_project_by_id(db, project_id, user.id)
+
+@router.delete("/{project_id}")
+def delete(
+    project_id: UUID,
+    db: Session = Depends(get_db),
+    user = Depends(get_current_user)
+):
+    get_project_by_id(db, project_id, user.id)  # ownership check
+    delete_project(db, project_id)
+    return {"status": "deleted"}

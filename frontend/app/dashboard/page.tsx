@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { fetchProjects, createProject } from "app/services/projects";
+import { fetchProjects, createProject, deleteProject } from "app/services/projects";
 import { useAuth } from "app/hooks/useAuth";
 
 export default function Dashboard() {
@@ -74,6 +74,17 @@ export default function Dashboard() {
       setError("Workspace creation failed");
     }
   }
+  async function handleDelete(projectId: string, e: React.MouseEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!confirm("Delete this workspace? This cannot be undone.")) return;
+  try {
+    await deleteProject(projectId);
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+  } catch {
+    setError("Failed to delete workspace");
+  }
+}
 
   return (
     <div style={styles.wrapper}>
@@ -285,6 +296,13 @@ export default function Dashboard() {
                     <Link href={`/projects/${p.id}/analytics`} style={styles.iconLink}>
                       <span title="Analytics">📊</span>
                     </Link>
+                    <button
+                      onClick={(e) => handleDelete(p.id, e)}
+                      style={styles.deleteBtn}
+                      title="Delete workspace"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               </div>
@@ -895,4 +913,18 @@ const styles: any = {
     boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
     zIndex: 2000,
   },
+  deleteBtn: {
+  flex: 1,
+  background: "rgba(239,68,68,0.08)",
+  border: "1px solid rgba(239,68,68,0.2)",
+  color: "#ef4444",
+  padding: "12px",
+  borderRadius: "10px",
+  cursor: "pointer",
+  fontSize: "18px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  transition: "all 0.2s ease",
+},
 };

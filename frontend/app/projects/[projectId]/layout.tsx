@@ -198,8 +198,8 @@ export default function ProjectLayout({
   ];
 
   const handleBackToDashboard = () => {
-    router.push('/dashboard');
-  };
+  window.location.href = '/dashboard';  // ✅ forces full re-fetch instead of cached state
+};
 
   return (
     <div style={styles.wrapper}>
