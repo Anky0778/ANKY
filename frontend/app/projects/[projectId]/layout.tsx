@@ -707,15 +707,16 @@ wrapper: {
     borderRadius: "2px",
     animation: "slideIn 2s ease-in-out infinite",
   },
- content: {
+content: {
   flex: 1,
-  padding: "0",            // ← was "32px" — remove it
+  padding: "0",
   position: "relative",
   zIndex: 1,
-  overflowY: "auto",
-  display: "flex",    // ← ADD
-  flexDirection: "column", // ← ADD  
-  minHeight: 0,            // ← ADD
+  overflowY: "auto",         /* ✅ only this scrolls */
+  overflowX: "hidden",       /* ✅ no horizontal scroll */
+  display: "flex",
+  flexDirection: "column",
+  minHeight: 0,
 },
 contentWrapper: {
   animation: "slideIn 0.3s ease-out",

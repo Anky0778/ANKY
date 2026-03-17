@@ -446,13 +446,15 @@ if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
 const styles: any = {
   wrapper: {
   minHeight: "100vh",
+  maxHeight: "100vh",        /* ✅ ADD — contains it to viewport */
+  overflowY: "auto",         /* ✅ dashboard scrolls internally */
+  overflowX: "hidden",       /* ✅ no horizontal overflow */
   padding: "40px 60px",
   background: "#0f172a",
   color: "white",
   position: "relative",
-  overflow: "hidden",   // ✅ already there — good
-  overflowY: "auto",    // ✅ ADD — allows dashboard to scroll internally
 },
+
   bgGradient1: {
     position: "absolute",
     top: "-20%",

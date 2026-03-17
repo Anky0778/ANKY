@@ -76,17 +76,25 @@
 }
 
 /* REPLACE WITH: */
+/* REPLACE your entire html, body block with this: */
 html, body {
   height: 100%;
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
-  overflow-y: hidden;  /* ✅ ADD THIS */
-  scrollbar-width: none; /* ✅ Firefox */
+  overflow: hidden;          /* ✅ no scrollbars on html/body at all */
+  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;  /* IE/Edge */
 }
+
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  display: none; /* ✅ Chrome, Safari, Edge */
+  display: none;             /* Chrome/Safari */
+}
+
+/* ✅ ADD THIS — hides scrollbar everywhere but keeps scroll working */
+*::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
 }
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
