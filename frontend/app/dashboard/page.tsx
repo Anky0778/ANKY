@@ -445,13 +445,14 @@ if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
 
 const styles: any = {
   wrapper: {
-    minHeight: "100vh",
-    padding: "40px 60px",
-    background: "#0f172a",
-    color: "white",
-    position: "relative",
-    overflow: "hidden",
-  },
+  minHeight: "100vh",
+  padding: "40px 60px",
+  background: "#0f172a",
+  color: "white",
+  position: "relative",
+  overflow: "hidden",   // ✅ already there — good
+  overflowY: "auto",    // ✅ ADD — allows dashboard to scroll internally
+},
   bgGradient1: {
     position: "absolute",
     top: "-20%",
@@ -944,4 +945,6 @@ const styles: any = {
   justifyContent: "center",
   transition: "all 0.2s ease",
 },
+
 };
+
