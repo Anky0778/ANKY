@@ -182,7 +182,7 @@ from deep_translator import GoogleTranslator
 
 HF_API_KEY = os.getenv("HF_API_KEY")
 # ✅ Runs on HF servers — no memory cost on Render, free tier, 384-dim vectors
-API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+API_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/feature-extraction"
 HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
 
