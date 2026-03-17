@@ -172,21 +172,18 @@ def embed_query(query: str) -> list[float]:
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query embedding failed: {e}")"""
-        
 import unicodedata
 import os
 import time
+import requests
 from fastapi import HTTPException
-from google import genai
-from google.genai import types
 from langdetect import detect
 from deep_translator import GoogleTranslator
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMBED_MODEL = "models/gemini-embedding-001"  # ✅ full name, no http_options
-
-client = genai.Client(api_key=GEMINI_API_KEY)
-translator = GoogleTranslator(source="auto", target="en")
+HF_API_KEY = os.getenv("HF_API_KEY")
+# ✅ Runs on HF servers — no memory cost on Render, free tier, 384-dim vectors
+API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+HEADERS = {"Authorization": f"Bearer {HF_API_KEY}"}
 
 
 def normalize_text(text: str) -> str:
@@ -198,59 +195,67 @@ def translate_to_english(text: str) -> str:
         lang = detect(text)
         if lang == "en":
             return text
-        return translator.translate(text)
+        return GoogleTranslator(source="auto", target="en").translate(text)
     except Exception:
         return text
 
 
-def embed_batch_with_retry(batch: list[str], batch_num: int, max_retries: int = 5) -> list:
-    delay = 10
-    for attempt in range(max_retries):
-        try:
-            response = client.models.embed_content(
-                model=EMBED_MODEL,
-                contents=batch,
-                config=types.EmbedContentConfig(
-                    task_type="RETRIEVAL_DOCUMENT",
-                )
-            )
-            return [embedding.values for embedding in response.embeddings]
-        except Exception as e:
-            err = str(e)
-            if "429" in err or "RESOURCE_EXHAUSTED" in err:
-                if attempt < max_retries - 1:
-                    print(f"⏳ Rate limited on batch {batch_num}, waiting {delay}s (attempt {attempt+1}/{max_retries})...")
-                    time.sleep(delay)
-                    delay *= 2
-                else:
-                    raise HTTPException(status_code=429, detail="Embedding rate limit exceeded after retries.")
-            else:
-                raise HTTPException(status_code=500, detail=f"Embedding failed: {e}")
-    return []
+def _hf_embed(texts: list[str], attempt: int = 0) -> list[list[float]]:
+    """Call HF inference API with retry on 503 (model loading)."""
+    response = requests.post(
+        API_URL,
+        headers=HEADERS,
+        json={"inputs": texts, "options": {"wait_for_model": True}},
+        timeout=60,
+    )
+
+    if response.status_code == 503:
+        # Model is loading on HF side — wait and retry
+        if attempt < 3:
+            print(f"⏳ HF model loading, waiting 20s (attempt {attempt + 1})...")
+            time.sleep(20)
+            return _hf_embed(texts, attempt + 1)
+        raise HTTPException(status_code=503, detail="HF model unavailable after retries")
+
+    if response.status_code == 429:
+        if attempt < 4:
+            wait = 30 * (attempt + 1)
+            print(f"⏳ HF rate limit, waiting {wait}s...")
+            time.sleep(wait)
+            return _hf_embed(texts, attempt + 1)
+        raise HTTPException(status_code=429, detail="HF rate limit exceeded after retries")
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=500,
+            detail=f"HF embedding error {response.status_code}: {response.text}"
+        )
+
+    return response.json()  # list of list of floats
 
 
 def embed_texts(texts: list[str]) -> list[list[float]]:
     if not texts:
         raise HTTPException(status_code=500, detail="No texts provided for embedding")
 
-    processed_texts = [translate_to_english(normalize_text(t)) for t in texts]
+    processed = [translate_to_english(normalize_text(t)) for t in texts]
 
     all_vectors = []
-    batch_size = 100
+    batch_size = 64  # HF handles up to ~100 but 64 is safer
 
-    for i in range(0, len(processed_texts), batch_size):
-        batch = processed_texts[i: i + batch_size]
+    for i in range(0, len(processed), batch_size):
+        batch = processed[i: i + batch_size]
         batch_num = i // batch_size + 1
-        print(f"⚙️ Embedding batch {batch_num} ({len(batch)} texts)...")
+        print(f"⚙️ Embedding batch {batch_num} ({len(batch)} texts) via HF API...")
 
-        vectors = embed_batch_with_retry(batch, batch_num)
+        vectors = _hf_embed(batch)
         all_vectors.extend(vectors)
 
-        if i + batch_size < len(processed_texts):
-            print(f"💤 Waiting 12s before next batch...")
-            time.sleep(12)
+        # Small polite delay between batches
+        if i + batch_size < len(processed):
+            time.sleep(1)
 
-    print(f"✅ Embedded {len(all_vectors)} chunks using {EMBED_MODEL}")
+    print(f"✅ Embedded {len(all_vectors)} chunks — dim={len(all_vectors[0])}")
     return all_vectors
 
 
@@ -259,11 +264,7 @@ def embed_query(query: str) -> list[float]:
         raise HTTPException(status_code=400, detail="Empty query")
     try:
         q = translate_to_english(normalize_text(query))
-        response = client.models.embed_content(
-            model=EMBED_MODEL,
-            contents=q,
-            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
-        )
-        return response.embeddings[0].values
+        result = _hf_embed([q])
+        return result[0]
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query embedding failed: {e}")
