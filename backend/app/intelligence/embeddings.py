@@ -183,12 +183,9 @@ from langdetect import detect
 from deep_translator import GoogleTranslator
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMBED_MODEL = "gemini-embedding-001"
+EMBED_MODEL = "models/gemini-embedding-001"  # ✅ full name, no http_options
 
-client = genai.Client(
-    api_key=GEMINI_API_KEY,
-    http_options=types.HttpOptions(api_version="v1")
-)
+client = genai.Client(api_key=GEMINI_API_KEY)
 translator = GoogleTranslator(source="auto", target="en")
 
 
@@ -207,9 +204,7 @@ def translate_to_english(text: str) -> str:
 
 
 def embed_batch_with_retry(batch: list[str], batch_num: int, max_retries: int = 5) -> list:
-    """Embed a single batch with exponential backoff on 429s."""
-    delay = 10  # start with 10s wait
-
+    delay = 10
     for attempt in range(max_retries):
         try:
             response = client.models.embed_content(
@@ -220,19 +215,17 @@ def embed_batch_with_retry(batch: list[str], batch_num: int, max_retries: int = 
                 )
             )
             return [embedding.values for embedding in response.embeddings]
-
         except Exception as e:
             err = str(e)
             if "429" in err or "RESOURCE_EXHAUSTED" in err:
                 if attempt < max_retries - 1:
-                    print(f"⏳ Rate limited on batch {batch_num}, waiting {delay}s (attempt {attempt + 1}/{max_retries})...")
+                    print(f"⏳ Rate limited on batch {batch_num}, waiting {delay}s (attempt {attempt+1}/{max_retries})...")
                     time.sleep(delay)
-                    delay *= 2  # exponential backoff: 10 → 20 → 40 → 80 → 160
+                    delay *= 2
                 else:
-                    raise HTTPException(status_code=429, detail=f"Embedding rate limit exceeded after {max_retries} retries.")
+                    raise HTTPException(status_code=429, detail="Embedding rate limit exceeded after retries.")
             else:
                 raise HTTPException(status_code=500, detail=f"Embedding failed: {e}")
-
     return []
 
 
@@ -240,11 +233,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
     if not texts:
         raise HTTPException(status_code=500, detail="No texts provided for embedding")
 
-    processed_texts = []
-    for t in texts:
-        t = normalize_text(t)
-        t = translate_to_english(t)
-        processed_texts.append(t)
+    processed_texts = [translate_to_english(normalize_text(t)) for t in texts]
 
     all_vectors = []
     batch_size = 100
@@ -257,9 +246,8 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
         vectors = embed_batch_with_retry(batch, batch_num)
         all_vectors.extend(vectors)
 
-        # ✅ Polite delay between batches to avoid hitting RPM
         if i + batch_size < len(processed_texts):
-            print(f"💤 Waiting 12s before next batch to respect rate limits...")
+            print(f"💤 Waiting 12s before next batch...")
             time.sleep(12)
 
     print(f"✅ Embedded {len(all_vectors)} chunks using {EMBED_MODEL}")
@@ -269,19 +257,13 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
 def embed_query(query: str) -> list[float]:
     if not query.strip():
         raise HTTPException(status_code=400, detail="Empty query")
-
     try:
-        q = normalize_text(query)
-        q = translate_to_english(q)
-
+        q = translate_to_english(normalize_text(query))
         response = client.models.embed_content(
             model=EMBED_MODEL,
             contents=q,
-            config=types.EmbedContentConfig(
-                task_type="RETRIEVAL_QUERY",
-            )
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
         )
         return response.embeddings[0].values
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query embedding failed: {e}")
