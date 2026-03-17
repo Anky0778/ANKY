@@ -75,8 +75,12 @@
   --border-light: #475569;
 }
 
-html {
+/* REPLACE WITH: */
+html, body {
   scroll-behavior: smooth;
+  height: 100%;          /* ✅ ADD */
+  width: 100%;           /* ✅ ADD */
+  overflow-x: hidden;    /* ✅ ADD */
 }
 
 body {
@@ -113,7 +117,7 @@ body {
 
 /* Utility Classes */
 .container {
-  width: 120%;
+  width: 100%;   /* ✅ fixed */
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);

@@ -256,7 +256,7 @@ export default function ProjectOverview() {
           <StatCard label="Incidents Indexed" value={a?.incident_count??0}       icon="🚨" color="#ef4444" delay={150}/>
           <StatCard label="Chat Sessions"      value={a?.chat_sessions_count??0} icon="💬" color="#a855f7" delay={270}/>
           <StatCard label="Messages Sent"      value={a?.message_count??0}       icon="✉️" color="#3b82f6" delay={390}/>
-          <StatCard label="AI Assist Ratio"    value={aiRatio} suffix="%"        icon="🤖" color="#14b8a6" delay={510}/>
+          <StatCard label="Avg messages per session"    value={aiRatio} suffix="%"        icon="🤖" color="#14b8a6" delay={510}/>
         </div>
 
         {/* Trend chart + pipeline */}

@@ -719,10 +719,11 @@ wrapper: {
 },
 contentWrapper: {
   animation: "slideIn 0.3s ease-out",
-  flex: 1,                 // ← was height: "100%"
-  minHeight: 0,            // ← ADD
+  flex: 1,
+  minHeight: 0,
   maxWidth: "1400px",
   margin: "0 auto",
   width: "100%",
+  height: "100%",   // ✅ ADD THIS
 },
 };
