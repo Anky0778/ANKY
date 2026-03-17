@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { fetchProjects, createProject, deleteProject } from "app/services/projects";
 import { useAuth } from "app/hooks/useAuth";
-const [isLoadingProjects, setIsLoadingProjects] = useState(true); // ✅ start as true
+
 export default function Dashboard() {
   const { isAuthenticated, isLoading, logout } = useAuth();
 
@@ -44,16 +44,16 @@ export default function Dashboard() {
     incidentVolume: "",
   });
 
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   useEffect(() => {
   if (!isAuthenticated) return;
   setIsLoadingProjects(true);
   fetchProjects()
     .then((data) => setProjects(data))
     .catch(() => setError("Failed to load workspaces"))
-    .finally(() => setIsLoadingProjects(false)); // ✅ only show UI after fetch completes
+    .finally(() => setIsLoadingProjects(false));
 }, [isAuthenticated]);
-
-  if (isLoading) return null;
+  if (isLoading || isLoadingProjects) return null; // ✅ return null during SSR, not JSX
 if (!isAuthenticated) return null;
 if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
   <div style={{
