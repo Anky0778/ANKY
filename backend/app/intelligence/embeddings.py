@@ -94,9 +94,13 @@ from langdetect import detect
 from deep_translator import GoogleTranslator
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-EMBED_MODEL = "text-embedding-004"  # ✅ NO "models/" prefix with google-genai SDK
+EMBED_MODEL = "text-embedding-004"
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+# ✅ Force stable v1 API — default is v1beta which doesn't support this model
+client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(api_version="v1")
+)
 translator = GoogleTranslator(source="auto", target="en")
 
 
@@ -133,7 +137,7 @@ def embed_texts(texts: list[str]) -> list[list[float]]:
             print(f"⚙️ Embedding batch {i // batch_size + 1} ({len(batch)} texts)...")
 
             response = client.models.embed_content(
-                model=EMBED_MODEL,   # ✅ "text-embedding-004" not "models/text-embedding-004"
+                model=EMBED_MODEL,
                 contents=batch,
                 config=types.EmbedContentConfig(
                     task_type="RETRIEVAL_DOCUMENT",
@@ -162,7 +166,7 @@ def embed_query(query: str) -> list[float]:
             model=EMBED_MODEL,
             contents=q,
             config=types.EmbedContentConfig(
-                task_type="RETRIEVAL_QUERY",  # ✅ different task type for queries
+                task_type="RETRIEVAL_QUERY",
             )
         )
 
