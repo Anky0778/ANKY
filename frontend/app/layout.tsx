@@ -9,22 +9,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html 
-      lang="en" 
-      className={inter.className}
-      style={{ overflow: 'hidden', height: '100%', width: '100%' }}
-    >
-      <body style={{
-        overflow: 'hidden',
-        height: '100%',
-        width: '100%',
-        maxWidth: '100vw',
-        margin: 0,
-        padding: 0,
-        background: '#0f172a',
-      }}>
-        {children}
-      </body>
+    <html lang="en" className={inter.className}>
+      <body>{children}</body>
     </html>
   )
 }
