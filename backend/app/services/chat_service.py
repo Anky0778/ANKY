@@ -84,7 +84,7 @@ def _build_context(db: Session, project_id: UUID, session_id: UUID, user_message
 def post_message(db: Session, project_id: UUID, session_id: UUID, user_message: str):
     prompt = _build_context(db, project_id, session_id, user_message)
 
-    model = genai.GenerativeModel(model_name=CHAT_MODEL)
+    #model = genai.GenerativeModel(model_name=CHAT_MODEL)
     response = client.models.generate_content(
         model=CHAT_MODEL,
         contents=prompt
