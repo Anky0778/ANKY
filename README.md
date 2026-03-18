@@ -215,7 +215,7 @@ Building this taught me a lot about real-world RAG pipelines:
 
 **Aniket Kumar Ojha** — built while working full-time and finishing college.
 
-Connect on [LinkedIn](#) 
+Connect on [[LinkedIn](#) ](https://www.linkedin.com/in/aniket-ojha-ab52222ab/)
 
 ---
 
