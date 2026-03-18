@@ -1,3 +1,4 @@
+#PROTOYPE
 # ANKY — Autonomous Neural Knowledge Yard
 
 > Reduce incident resolution time from hours to minutes using semantic search, RAG pipelines, and AI-assisted root cause analysis.
@@ -6,12 +7,12 @@
 
 ## What is ANKY?
 
-ANKY is an incident intelligence platform that learns from your team's historical incidents and SOPs. When a new incident arrives, ANKY instantly retrieves the most similar past incidents and resolution notes, and generates AI-assisted suggestions — so your team spends minutes resolving, not hours searching.
+ANKY is an incident intelligence platform that learns from your team's historical incidents and SOPs. When a new incident arrives, ANKY instantly retrieves the most similar past incidents and resolution notes, and generates AI-assisted suggestions so your team spends minutes resolving, not hours searching.
 
 **The problem it solves:**
 - L1/L2 support engineers waste hours searching through old tickets for similar incidents
-- Knowledge is siloed — when experienced engineers leave, resolution patterns go with them
-- Enterprise tools like ServiceNow AI cost $50k–200k/year, out of reach for most teams
+- Knowledge is siloed when experienced engineers leave, resolution patterns go with them
+- Enterprise tools like ServiceNow AI cost $5k–20k/year, out of reach for most teams
 
 ---
 
@@ -156,7 +157,7 @@ Your historical incident file must have these columns:
 | `RootCause` | What caused the incident |
 | `Resolution Notes` | How it was resolved |
 
-Supported formats: `.csv`, `.xlsx`, `.xls` (UTF-8 encoding recommended)
+Supported formats: `.csv`, (UTF-8 encoding recommended)
 
 ---
 
@@ -194,9 +195,9 @@ Building this taught me a lot about real-world RAG pipelines:
 
 - **Embedding model deprecations** — `text-embedding-004` was deprecated mid-development, had to migrate to HuggingFace inference API to stay within free tier memory limits on Render (512MB)
 - **FAISS dimension mismatches** — switching embedding models breaks existing indexes; learned to always clear and rebuild
-- **Render free tier filesystem** — ephemeral filesystem caused file-not-found errors; fixed by switching to in-memory `BytesIO` processing
-- **SSE streaming** — implemented real-time training progress using Server-Sent Events so users see live pipeline status instead of a spinner
-- **Column normalization** — real-world incident exports have inconsistent headers; built a robust normalizer that handles casing, spaces, and common aliases
+- **Render free tier filesystem** — ephemeral filesystem caused file not found errors; fixed by switching to in-memory `BytesIO` processing
+- **SSE streaming** — implemented real-time training progress using Server Sent Events so users see live pipeline status instead of a spinner
+- **Column normalization** — real world incident exports have inconsistent headers; built a robust normalizer that handles casing, spaces, and common aliases
 
 ---
 
