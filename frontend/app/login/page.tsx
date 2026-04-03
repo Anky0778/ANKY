@@ -128,11 +128,11 @@ export default function LoginPage() {
                 <div className="stat-label">Faster Diagnosis</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">100k+</div>
+                <div className="stat-number">1000+</div>
                 <div className="stat-label">Incidents Analyzed</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">500+</div>
+                <div className="stat-number">5+</div>
                 <div className="stat-label">Teams</div>
               </div>
             </div>

@@ -606,7 +606,7 @@ export default function LandingPage() {
             <div className="stat-desc">Support engineers spend half their time hunting for information, not fixing issues. ANKY cuts through the noise.</div>
           </div>
           <div className="stat-card">
-            <div className="stat-number">60-70%</div>
+            <div className="stat-number">38%</div>
             <div className="stat-title">Incidents are recurring</div>
             <div className="stat-desc">Past incidents hold the answers. ANKY's similarity engine finds them in seconds, not hours.</div>
           </div>
@@ -646,7 +646,7 @@ export default function LandingPage() {
               <div className="fact-detail">Industry standard: Most incident time is spent gathering information, not fixing. ANKY targets the biggest waste.</div>
             </div>
             <div className="fact-card">
-              <div className="fact-highlight">60-70%</div>
+              <div className="fact-highlight">38%</div>
               <div className="fact-text">Incidents repeat themselves</div>
               <div className="fact-detail">Production incidents are variations of past problems. Historical pattern matching is the obvious solution.</div>
             </div>

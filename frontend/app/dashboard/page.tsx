@@ -157,16 +157,16 @@ if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
           <div style={styles.statCard}>
             <div style={styles.statIcon}>⚡</div>
             <div>
-              <div style={styles.statValue}>~60s</div>
-              <div style={styles.statLabel}>Avg Resolution Time</div>
+              <div style={styles.statValue}><10s</div>
+              <div style={styles.statLabel}>QUERY RESPONSE</div>
             </div>
           </div>
           
           <div style={styles.statCard}>
             <div style={styles.statIcon}>📈</div>
             <div>
-              <div style={styles.statValue}>85%</div>
-              <div style={styles.statLabel}>Accuracy Rate</div>
+              <div style={styles.statValue}>100%</div>
+              <div style={styles.statLabel}>RAG-POWERED SEARCH</div>
             </div>
           </div>
         </div>
