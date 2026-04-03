@@ -132,8 +132,8 @@ export default function LoginPage() {
                 <div className="stat-label">Incidents Analyzed</div>
               </div>
               <div className="stat-item">
-                <div className="stat-number">5+</div>
-                <div className="stat-label">Teams</div>
+                <div className="stat-number">3+</div>
+                <div className="stat-label">Live Workspace</div>
               </div>
             </div>
           </div>
