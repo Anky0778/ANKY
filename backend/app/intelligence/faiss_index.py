@@ -26,7 +26,7 @@ def build_and_save_index(
     if len(np_vectors.shape) < 2:
         print(f"❌ Malformed vector array. Shape: {np_vectors.shape}")
         return
-
+    faiss.normalize_L2(np_vectors)   
     dim = np_vectors.shape[1]
     base_index = faiss.IndexFlatL2(dim)
     index = faiss.IndexIDMap(base_index)
