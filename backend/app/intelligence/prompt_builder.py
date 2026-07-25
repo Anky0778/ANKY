@@ -2,7 +2,8 @@ def build_prompt(
     user_query: str,
     conversation: str,
     incident_blocks: list[dict],
-    is_followup: bool = False
+    is_followup: bool = False,
+    retrieval_confidence: float = 0,
 ) -> str:
     return f"""
 You are a Senior Enterprise Incident Intelligence Assistant.
@@ -71,13 +72,11 @@ Recommended Next Steps (for L1/L2):
 3. Clear escalation criteria to L2/L3.
 
 Confidence Assessment:
-State confidence as a percentage (0–100%) reflecting how well the historical
-evidence supports the root cause and resolution above. Use the following as
-a rough calibration guide, then explain the number in 1–2 sentences:
-- 90–100%: Multiple closely matching incidents with the same root cause and resolution.
-- 70–89%: Strong pattern match, but some details differ or evidence is partial.
-- 40–69%: Plausible match based on limited or loosely related incidents.
-- Below 40%: Weak or inferred; mostly assumption due to sparse historical data.
+The retrieval system measured {retrieval_confidence}% average similarity between
+this incident and the top matching historical incidents. Report this exact
+percentage (do not invent a different number), then in 1–2 sentences explain
+what's driving it — e.g. strong wording/root-cause overlap, or sparse/loosely
+related matches if the number is low.
 
 Optional Clarifying Question:
 Ask ONE question only if it would significantly improve resolution.
