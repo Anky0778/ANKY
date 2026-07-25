@@ -62,10 +62,19 @@ def _build_context(db: Session, project_id: UUID, session_id: UUID, user_message
             "long_description": r.get("long_description", ""),
             "rootcause": r.get("rootcause", ""),
             "resolution_notes": r.get("resolution_notes", ""),
+            "match_confidence": r.get("confidence_pct", 0),  # ✅ NEW: per-incident similarity %
         }
         for r in retrieved
         if r.get("type") == "incident" and r.get("incident_id")
     ]
+
+    # ✅ NEW: overall confidence = average similarity of the top matches actually
+    # used in the answer, not a number the LLM invents on its own.
+    top_matches = incident_blocks[:5]
+    overall_confidence = (
+        round(sum(b["match_confidence"] for b in top_matches) / len(top_matches), 1)
+        if top_matches else 0.0
+    )
 
     is_followup = bool(
         "Open clarification questions" in conversation_state
@@ -75,7 +84,8 @@ def _build_context(db: Session, project_id: UUID, session_id: UUID, user_message
         user_query=user_message,
         conversation=conversation_state,
         incident_blocks=incident_blocks,
-        is_followup=is_followup
+        is_followup=is_followup,
+        retrieval_confidence=overall_confidence,  # ✅ NEW
     )
 
     return prompt
