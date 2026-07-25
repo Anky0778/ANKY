@@ -45,25 +45,31 @@ def retrieve_context(project_id: str, query: str, k: int = 15):
     query_np = np.array([query_vector]).astype("float32")
 
     distances, indices = index.search(query_np, k)
-
+    faiss.normalize_L2(query_np)
     results = []
     seen_incidents = set()
-
+    
     for idx, distance in zip(indices[0], distances[0]):
         if idx < 0 or idx >= len(metadata):
             continue
-
+    
         m = metadata[idx]
-
+    
         if m.get("type") != "incident":
             continue
-
+    
         incident_id = m.get("incident_id")
         if not incident_id or incident_id in seen_incidents:
             continue
-
+    
         seen_incidents.add(incident_id)
+    
+        # Convert L2 distance on unit vectors -> cosine similarity -> percentage
+        cosine_sim = 1 - (float(distance) / 2)
+        confidence_pct = round(max(0.0, min(1.0, cosine_sim)) * 100, 1)
+    
         m["_similarity_score"] = float(distance)
+        m["confidence_pct"] = confidence_pct     # ← NEW field
         results.append(m)
 
     return results
