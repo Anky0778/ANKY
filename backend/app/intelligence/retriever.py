@@ -65,8 +65,12 @@ def retrieve_context(project_id: str, query: str, k: int = 15):
         seen_incidents.add(incident_id)
     
         # Convert L2 distance on unit vectors -> cosine similarity -> percentage
+        SIMILARITY_FLOOR = 0.15    # ≈ cosine sim for unrelated incident text
+        SIMILARITY_CEILING = 0.65  # ≈ cosine sim for a strong, closely matching incident
+        
         cosine_sim = 1 - (float(distance) / 2)
-        confidence_pct = round(max(0.0, min(1.0, cosine_sim)) * 100, 1)
+        rescaled = (cosine_sim - SIMILARITY_FLOOR) / (SIMILARITY_CEILING - SIMILARITY_FLOOR)
+        confidence_pct = round(max(0.0, min(1.0, rescaled)) * 100, 1)
     
         m["_similarity_score"] = float(distance)
         m["confidence_pct"] = confidence_pct     # ← NEW field
