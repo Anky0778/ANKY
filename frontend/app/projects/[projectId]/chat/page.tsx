@@ -182,11 +182,26 @@ export default function ChatPage() {
     }
   }
 
-  function handleClear() {
-    getProjectStore(projectId).messages = [];
-    setMessages([]);
+  async function handleClear() {
     setShowClearConfirm(false);
     setError(null);
+  
+    // Wipe UI immediately for responsiveness
+    getProjectStore(projectId).messages = [];
+    setMessages([]);
+    setSessionReady(false);
+  
+    try {
+      // Start a brand-new backend session so old ChatMessage rows
+      // (tied to the old session_id) are never queried again.
+      const res = await createSession(projectId);
+      const s = getProjectStore(projectId);
+      s.sessionId = res.id;
+      setSessionId(res.id);
+      setSessionReady(true);
+    } catch {
+      setError("Failed to reset session. Please refresh.");
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
