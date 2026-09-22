@@ -15,6 +15,10 @@ import {
   ArrowRight,
   ArrowUp,
   BookOpen,
+  FileText,
+  Ticket,
+  AlertCircle,
+  CheckCircle2,
   Target,
   Upload,
   MessageSquareText,
@@ -141,9 +145,9 @@ function FlowVisual() {
   const inView = useInView(ref, { once: true, margin: "-15% 0px" });
 
   const sources = [
-    { x: 90, y: 40, label: "PDFs" },
-    { x: 90, y: 90, label: "SOPs" },
-    { x: 90, y: 140, label: "Tickets" },
+    { x: 90, y: 30, label: "PDFs", icon: FileText },
+    { x: 90, y: 86, label: "SOPs", icon: BookOpen },
+    { x: 90, y: 142, label: "Tickets", icon: Ticket },
   ];
   const matches = [
     { x: 540, y: 30, label: "Match #1" },
@@ -152,8 +156,8 @@ function FlowVisual() {
     { x: 540, y: 144, label: "Match #4" },
     { x: 540, y: 182, label: "Match #5" },
   ];
-  const core = { x: 320, y: 106 };
-  const incident = { x: 90, y: 178 };
+  const core = { x: 320, y: 110 };
+  const incident = { x: 90, y: 198 };
 
   return (
     <div className="flow-section container" ref={ref}>
@@ -163,7 +167,7 @@ function FlowVisual() {
         animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
-        <svg viewBox="0 0 630 232" className="flow-svg" role="img" aria-label="ANKY analysis flow">
+        <svg viewBox="0 0 630 250" className="flow-svg" role="img" aria-label="ANKY analysis flow">
           {/* connecting lines: sources -> core */}
           {sources.map((s, i) => (
             <motion.path
@@ -204,18 +208,28 @@ function FlowVisual() {
           {/* source nodes */}
           {sources.map((s, i) => (
             <g key={`sn-${i}`}>
-              <circle cx={s.x} cy={s.y} r={16} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.14)" />
+              <circle cx={s.x} cy={s.y} r={16} fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.16)" />
+              <foreignObject x={s.x - 9} y={s.y - 9} width={18} height={18}>
+                <div className="flow-icon-wrap" style={{ color: "var(--text-secondary)" }}>
+                  <s.icon size={13} strokeWidth={2} />
+                </div>
+              </foreignObject>
               <text x={s.x} y={s.y + 33} textAnchor="middle" className="flow-node-label">{s.label}</text>
             </g>
           ))}
 
           {/* incident node */}
           <g>
-            <circle cx={incident.x} cy={incident.y} r={16} fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.5)" />
+            <circle cx={incident.x} cy={incident.y} r={16} fill="rgba(167,139,250,0.12)" stroke="rgba(167,139,250,0.55)" />
+            <foreignObject x={incident.x - 9} y={incident.y - 9} width={18} height={18}>
+              <div className="flow-icon-wrap" style={{ color: "#a78bfa" }}>
+                <AlertCircle size={13} strokeWidth={2} />
+              </div>
+            </foreignObject>
             <text x={incident.x} y={incident.y + 33} textAnchor="middle" className="flow-node-label">New incident</text>
           </g>
 
-          {/* core node — pulsing */}
+          {/* core node — settles in once, no looping pulse */}
           <motion.circle
             cx={core.x}
             cy={core.y}
@@ -223,8 +237,9 @@ function FlowVisual() {
             fill="rgba(79,124,255,0.14)"
             stroke="#4f7cff"
             strokeWidth={1.5}
-            animate={{ r: [30, 34, 30] }}
-            transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+            initial={{ r: 22, opacity: 0.4 }}
+            animate={inView ? { r: 30, opacity: 1 } : {}}
+            transition={{ duration: 0.7, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           />
           <circle cx={core.x} cy={core.y} r={30} fill="none" stroke="rgba(79,124,255,0.5)" strokeWidth={1} />
           <text x={core.x} y={core.y - 3} textAnchor="middle" className="flow-node-label center">ANKY</text>
@@ -233,7 +248,12 @@ function FlowVisual() {
           {/* match nodes */}
           {matches.map((m, i) => (
             <g key={`mn-${i}`}>
-              <circle cx={m.x} cy={m.y} r={13} fill="rgba(47,184,114,0.10)" stroke="rgba(47,184,114,0.55)" />
+              <circle cx={m.x} cy={m.y} r={13} fill="rgba(47,184,114,0.10)" stroke="rgba(47,184,114,0.6)" />
+              <foreignObject x={m.x - 8} y={m.y - 8} width={16} height={16}>
+                <div className="flow-icon-wrap" style={{ color: "#2fb872" }}>
+                  <CheckCircle2 size={12} strokeWidth={2} />
+                </div>
+              </foreignObject>
               <text x={m.x + 24} y={m.y + 4} textAnchor="start" className="flow-node-label">{m.label}</text>
             </g>
           ))}
