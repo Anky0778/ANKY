@@ -2,39 +2,43 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import {
+  Plus,
+  LogOut,
+  LayoutGrid,
+  Bot,
+  Zap,
+  TrendingUp,
+  Settings2,
+  FileText,
+  Target,
+  FolderOpen,
+  MessageSquare,
+  BarChart3,
+  Trash2,
+  Inbox,
+  Check,
+} from "lucide-react";
 import { fetchProjects, createProject, deleteProject } from "app/services/projects";
 import { useAuth } from "app/hooks/useAuth";
+
+const APP_TYPES = [
+  "Web Application",
+  "Mobile App",
+  "Enterprise System",
+  "SaaS Platform",
+  "Microservices",
+  "Legacy System",
+];
+const ENVIRONMENTS = ["Production", "Staging", "Development", "Internal"];
 
 export default function Dashboard() {
   const { isAuthenticated, isLoading, logout } = useAuth();
 
-  // Add global styles for select dropdowns
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.innerHTML = `
-      select option {
-        background-color: #1e293b !important;
-        color: white !important;
-        padding: 10px;
-      }
-      select option:checked {
-        background-color: #3b82f6 !important;
-        color: white !important;
-      }
-      select option:hover {
-        background-color: #334155 !important;
-      }
-    `;
-    document.head.appendChild(style);
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
-
   const [projects, setProjects] = useState<any[]>([]);
   const [error, setError] = useState("");
-
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -44,398 +48,377 @@ export default function Dashboard() {
     incidentVolume: "",
   });
 
-  const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   useEffect(() => {
-  if (!isAuthenticated) return;
-  setIsLoadingProjects(true);
-  fetchProjects()
-    .then((data) => setProjects(data))
-    .catch(() => setError("Failed to load workspaces"))
-    .finally(() => setIsLoadingProjects(false));
-}, [isAuthenticated]);
-  if (isLoading || isLoadingProjects) return null; // ✅ return null during SSR, not JSX
-if (!isAuthenticated) return null;
-if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
-  <div style={{
-    minHeight: "100vh",
-    background: "#0f172a",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "white",
-    fontSize: "18px",
-    gap: "12px",
-  }}>
-    <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
-    Loading workspaces...
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </div>
-);
+    if (!isAuthenticated) return;
+    setIsLoadingProjects(true);
+    fetchProjects()
+      .then((data) => setProjects(data))
+      .catch(() => setError("Failed to load workspaces"))
+      .finally(() => setIsLoadingProjects(false));
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (!error) return;
+    const t = setTimeout(() => setError(""), 4000);
+    return () => clearTimeout(t);
+  }, [error]);
+
+  if (isLoading || !isAuthenticated) return null;
 
   async function handleCreate() {
     if (!form.name.trim()) return;
-
     try {
       const project = await createProject(form.name, form.description);
       setProjects((prev) => [...prev, project]);
       setIsCreateOpen(false);
-      setForm({
-        name: "",
-        description: "",
-        appType: "",
-        environment: "",
-        userBase: "",
-        incidentVolume: "",
-      });
+      setForm({ name: "", description: "", appType: "", environment: "", userBase: "", incidentVolume: "" });
     } catch {
       setError("Workspace creation failed");
     }
   }
+
   async function handleDelete(projectId: string, e: React.MouseEvent) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (!confirm("Delete this workspace? This cannot be undone.")) return;
-  try {
-    await deleteProject(projectId);
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
-  } catch {
-    setError("Failed to delete workspace");
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Delete this workspace? This cannot be undone.")) return;
+    try {
+      await deleteProject(projectId);
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    } catch {
+      setError("Failed to delete workspace");
+    }
   }
-}
 
   return (
-    <div style={styles.wrapper}>
-      {/* Animated Background Elements */}
-      <div style={styles.bgGradient1}></div>
-      <div style={styles.bgGradient2}></div>
-      
-      {/* HEADER */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>Intelligence Workspaces</h1>
-          <p style={styles.subtitle}>
-            AI-powered incident resolution and knowledge management
-          </p>
+    <div style={{ minHeight: "100vh", background: "var(--surface-0)" }}>
+      {/* TOP BAR */}
+      <header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "18px 40px",
+          borderBottom: "1px solid var(--border-subtle)",
+          position: "sticky",
+          top: 0,
+          background: "var(--surface-0)",
+          zIndex: 10,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: "var(--radius-md)",
+              background: "var(--brand)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 14,
+            }}
+          >
+            A
+          </div>
+          <span style={{ fontWeight: 700, fontSize: "var(--fs-base)" }}>ANKY</span>
         </div>
 
-        <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
           {projects.length > 0 && (
-            <button style={styles.primaryBtn} onClick={() => setIsCreateOpen(true)}>
-              <span style={styles.btnIcon}>+</span> New Workspace
+            <button className="btn btn-primary" onClick={() => setIsCreateOpen(true)}>
+              <Plus size={16} /> New workspace
             </button>
           )}
-          <button style={styles.secondaryBtn} onClick={() => {
-            logout();
-            window.location.href = "/";
-          }}>
-            Logout
+          <button
+            className="btn btn-ghost"
+            onClick={() => {
+              logout();
+              window.location.href = "/";
+            }}
+          >
+            <LogOut size={15} /> Logout
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* STATS BAR - Only show when there are projects */}
-      {projects.length > 0 && (
-        <div style={styles.statsBar}>
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>📊</div>
-            <div>
-              <div style={styles.statValue}>{projects.length}</div>
-              <div style={styles.statLabel}>Active Workspaces</div>
-            </div>
-          </div>
-          
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>🤖</div>
-            <div>
-              <div style={styles.statValue}>
-                {projects.filter(p => p.is_trained).length}
-              </div>
-              <div style={styles.statLabel}>Intelligence Ready</div>
-            </div>
-          </div>
-          
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>⚡</div>
-            <div>
-              <div style={styles.statValue}>~10s</div>
-              <div style={styles.statLabel}>QUERY RESPONSE</div>
-            </div>
-          </div>
-          
-          <div style={styles.statCard}>
-            <div style={styles.statIcon}>📈</div>
-            <div>
-              <div style={styles.statValue}>100%</div>
-              <div style={styles.statLabel}>RAG-POWERED SEARCH</div>
-            </div>
-          </div>
+      <div className="page" style={{ maxWidth: 1280, margin: "0 auto" }}>
+        <div style={{ marginBottom: 28 }}>
+          <h1 className="page-title">Intelligence Workspaces</h1>
+          <p className="page-subtitle">AI-powered incident resolution and knowledge management</p>
         </div>
-      )}
 
-      {/* EMPTY STATE */}
-      {projects.length === 0 && (
-        <div style={styles.emptyContainer}>
-          <div style={styles.emptyCard}>
-            <div style={styles.emptyIcon}>🚀</div>
-            
-            <h2 style={styles.emptyTitle}>
-              Create Your First Intelligence Workspace
-            </h2>
-            
-            <p style={styles.emptyDescription}>
-              ANKY learns from your incidents and documentation to reduce diagnosis
-              time from hours to seconds. Train your AI assistant with past incidents,
-              technical docs, and resolution patterns.
-            </p>
-
-            <div style={styles.workflow}>
-              <div style={styles.workflowStep}>
-                <div style={styles.workflowNumber}>1</div>
-                <div style={styles.workflowIcon}>📥</div>
-                <div style={styles.workflowTitle}>Ingest Data</div>
-                <div style={styles.workflowDesc}>
-                  Upload incidents, docs, SNOW/Jira data
-                </div>
-              </div>
-              
-              <div style={styles.workflowArrow}>→</div>
-              
-              <div style={styles.workflowStep}>
-                <div style={styles.workflowNumber}>2</div>
-                <div style={styles.workflowIcon}>🧠</div>
-                <div style={styles.workflowTitle}>Train Intelligence</div>
-                <div style={styles.workflowDesc}>
-                  AI learns patterns & root causes
-                </div>
-              </div>
-              
-              <div style={styles.workflowArrow}>→</div>
-              
-              <div style={styles.workflowStep}>
-                <div style={styles.workflowNumber}>3</div>
-                <div style={styles.workflowIcon}>⚡</div>
-                <div style={styles.workflowTitle}>Resolve Faster</div>
-                <div style={styles.workflowDesc}>
-                  Get instant RCA & similar incidents
-                </div>
-              </div>
-              
-              <div style={styles.workflowArrow}>→</div>
-              
-              <div style={styles.workflowStep}>
-                <div style={styles.workflowNumber}>4</div>
-                <div style={styles.workflowIcon}>📊</div>
-                <div style={styles.workflowTitle}>Analyze Trends</div>
-                <div style={styles.workflowDesc}>
-                  Track patterns & improve SLA
-                </div>
-              </div>
-            </div>
-
-            <div style={styles.benefits}>
-              <div style={styles.benefit}>
-                <span style={styles.benefitIcon}>✓</span>
-                <span>Reduce MTTR by 80%</span>
-              </div>
-              <div style={styles.benefit}>
-                <span style={styles.benefitIcon}>✓</span>
-                <span>Eliminate knowledge loss</span>
-              </div>
-              <div style={styles.benefit}>
-                <span style={styles.benefitIcon}>✓</span>
-                <span>24/7 intelligent support</span>
-              </div>
-            </div>
-
-            <button style={styles.ctaButton} onClick={() => setIsCreateOpen(true)}>
-              Create Your First Workspace
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* WORKSPACE GRID */}
-      {projects.length > 0 && (
-        <div style={styles.workspacesSection}>
-          <div style={styles.sectionHeader}>
-            <h2 style={styles.sectionTitle}>Your Workspaces</h2>
-            <p style={styles.sectionSubtitle}>
-              Manage your AI-powered incident resolution environments
-            </p>
-          </div>
-          
-          <div style={styles.grid}>
-            {projects.map((p) => (
-              <div key={p.id} style={styles.card}>
-                <div style={styles.cardHeader}>
-                  <div style={styles.cardIcon}>
-                    {p.is_trained ? "🤖" : "⚙️"}
-                  </div>
-                  
-                  <div style={{
-                    ...styles.statusBadge,
-                    background: p.is_trained 
-                      ? "rgba(34, 197, 94, 0.15)" 
-                      : "rgba(234, 179, 8, 0.15)",
-                    color: p.is_trained ? "#22c55e" : "#eab308"
-                  }}>
-                    {p.is_trained ? "Intelligence Ready" : "Training Required"}
-                  </div>
-                </div>
-
-                <h3 style={styles.cardTitle}>{p.name}</h3>
-                
-                <p style={styles.cardDescription}>
-                  {p.description || "No description provided"}
-                </p>
-
-                <div style={styles.cardStats}>
-                  <div style={styles.cardStat}>
-                    <span style={styles.cardStatIcon}>📄</span>
-                    <span style={styles.cardStatText}>Documents trained</span>
-                  </div>
-                  <div style={styles.cardStat}>
-                    <span style={styles.cardStatIcon}>🎯</span>
-                    <span style={styles.cardStatText}>Incidents analyzed</span>
-                  </div>
-                </div>
-
-                <div style={styles.cardActions}>
-                  <Link href={`/projects/${p.id}`} style={styles.cardActionPrimary}>
-                    <span style={styles.actionIcon}>📂</span>
-                    Open Workspace
-                  </Link>
-                  
-                  <div style={styles.cardActionSecondary}>
-                    <Link href={`/projects/${p.id}/chat`} style={styles.iconLink}>
-                      <span title="Chat">💬</span>
-                    </Link>
-                    <Link href={`/projects/${p.id}/analytics`} style={styles.iconLink}>
-                      <span title="Analytics">📊</span>
-                    </Link>
-                    <button
-                      onClick={(e) => handleDelete(p.id, e)}
-                      style={styles.deleteBtn}
-                      title="Delete workspace"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                </div>
+        {/* LOADING STATE */}
+        {isLoadingProjects && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="card" style={{ height: 190 }}>
+                <div className="skeleton" style={{ height: 16, width: "40%", marginBottom: 14 }} />
+                <div className="skeleton" style={{ height: 22, width: "70%", marginBottom: 10 }} />
+                <div className="skeleton" style={{ height: 14, width: "90%", marginBottom: 6 }} />
+                <div className="skeleton" style={{ height: 14, width: "60%" }} />
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+
+        {!isLoadingProjects && (
+          <>
+            {/* STATS BAR */}
+            {projects.length > 0 && (
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                  gap: 16,
+                  marginBottom: 32,
+                }}
+              >
+                <StatCard icon={<LayoutGrid size={17} />} value={projects.length} label="Active workspaces" />
+                <StatCard
+                  icon={<Bot size={17} />}
+                  value={projects.filter((p) => p.is_trained).length}
+                  label="Intelligence ready"
+                />
+                <StatCard icon={<Zap size={17} />} value="~10s" label="Query response" />
+                <StatCard icon={<TrendingUp size={17} />} value="100%" label="RAG-powered search" />
+              </div>
+            )}
+
+            {/* EMPTY STATE */}
+            {projects.length === 0 && (
+              <div className="card" style={{ padding: "56px 40px", textAlign: "center", maxWidth: 780, margin: "24px auto" }}>
+                <div className="state-icon" style={{ margin: "0 auto 20px" }}>
+                  <LayoutGrid size={22} />
+                </div>
+                <h2 style={{ fontSize: "var(--fs-xl)", fontWeight: 700, marginBottom: 10 }}>
+                  Create your first intelligence workspace
+                </h2>
+                <p className="section-text" style={{ maxWidth: 520, margin: "0 auto 32px" }}>
+                  ANKY learns from your incidents and documentation to reduce diagnosis time from hours to
+                  seconds. Train your AI assistant with past incidents, technical docs, and resolution patterns.
+                </p>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: 12,
+                    marginBottom: 28,
+                    textAlign: "left",
+                  }}
+                >
+                  <WorkflowStep n={1} icon={<Inbox size={16} />} title="Ingest data" desc="Upload incidents, docs, SNOW/Jira data" />
+                  <WorkflowStep n={2} icon={<Bot size={16} />} title="Train intelligence" desc="AI learns patterns & root causes" />
+                  <WorkflowStep n={3} icon={<Zap size={16} />} title="Resolve faster" desc="Get instant RCA & similar incidents" />
+                  <WorkflowStep n={4} icon={<BarChart3 size={16} />} title="Analyze trends" desc="Track patterns & improve SLA" />
+                </div>
+
+                <div style={{ display: "flex", gap: 20, justifyContent: "center", marginBottom: 28, flexWrap: "wrap" }}>
+                  {["Reduce MTTR by 80%", "Eliminate knowledge loss", "24/7 intelligent support"].map((b) => (
+                    <span key={b} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--fs-sm)", color: "var(--text-secondary)" }}>
+                      <Check size={14} color="var(--success)" /> {b}
+                    </span>
+                  ))}
+                </div>
+
+                <button className="btn btn-primary btn-lg" onClick={() => setIsCreateOpen(true)}>
+                  <Plus size={16} /> Create your first workspace
+                </button>
+              </div>
+            )}
+
+            {/* WORKSPACE GRID */}
+            {projects.length > 0 && (
+              <div>
+                <h2 className="section-title" style={{ marginBottom: 4 }}>
+                  Your workspaces
+                </h2>
+                <p className="section-text" style={{ marginBottom: 18 }}>
+                  Manage your AI-powered incident resolution environments
+                </p>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+                  {projects.map((p) => (
+                    <div key={p.id} className="card card-interactive">
+                      <div className="card-header">
+                        <div className="state-icon" style={{ width: 38, height: 38, margin: 0 }}>
+                          {p.is_trained ? <Bot size={18} /> : <Settings2 size={18} />}
+                        </div>
+                        <span className={`badge ${p.is_trained ? "badge-success" : "badge-warning"}`}>
+                          {p.is_trained ? "Intelligence ready" : "Training required"}
+                        </span>
+                      </div>
+
+                      <h3 style={{ fontSize: "var(--fs-md)", fontWeight: 600, marginBottom: 6 }}>{p.name}</h3>
+                      <p className="section-text truncate" style={{ marginBottom: 18, WebkitLineClamp: 2 }}>
+                        {p.description || "No description provided"}
+                      </p>
+
+                      <div style={{ display: "flex", gap: 16, marginBottom: 18 }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--fs-xs)", color: "var(--text-tertiary)" }}>
+                          <FileText size={13} /> Documents trained
+                        </span>
+                        <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "var(--fs-xs)", color: "var(--text-tertiary)" }}>
+                          <Target size={13} /> Incidents analyzed
+                        </span>
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Link href={`/projects/${p.id}`} className="btn btn-secondary" style={{ flex: 1, textDecoration: "none" }}>
+                          <FolderOpen size={15} /> Open workspace
+                        </Link>
+                        <Link href={`/projects/${p.id}/chat`} className="btn btn-ghost btn-icon" title="Chat">
+                          <MessageSquare size={16} />
+                        </Link>
+                        <Link href={`/projects/${p.id}/analytics`} className="btn btn-ghost btn-icon" title="Analytics">
+                          <BarChart3 size={16} />
+                        </Link>
+                        <button onClick={(e) => handleDelete(p.id, e)} className="btn btn-ghost btn-icon" title="Delete workspace">
+                          <Trash2 size={16} color="var(--danger)" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
       {/* CREATE MODAL */}
       {isCreateOpen && (
-        <div style={styles.modalOverlay} onClick={() => setIsCreateOpen(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalHeader}>
-              <h2 style={styles.modalTitle}>Create Intelligence Workspace</h2>
-              <p style={styles.modalSubtitle}>
-                Set up a new AI-powered incident resolution environment
-              </p>
+        <div
+          onClick={() => setIsCreateOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(6, 8, 12, 0.6)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 100,
+            padding: 20,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="card animate-fade-in"
+            style={{ width: "100%", maxWidth: 540, maxHeight: "90vh", overflowY: "auto" }}
+          >
+            <div style={{ marginBottom: 22 }}>
+              <h2 style={{ fontSize: "var(--fs-lg)", fontWeight: 700, marginBottom: 4 }}>
+                Create intelligence workspace
+              </h2>
+              <p className="section-text">Set up a new AI-powered incident resolution environment</p>
             </div>
 
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Workspace Name *</label>
-              <input
-                style={styles.input}
-                placeholder="e.g., Production Support Q1"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-              />
-            </div>
-
-            <div style={styles.formGroup}>
-              <label style={styles.label}>Description</label>
-              <textarea
-                style={{...styles.input, ...styles.textarea}}
-                placeholder="Brief description of this workspace's purpose"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-              />
-            </div>
-
-            <div style={styles.formRow}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Application Type</label>
-                <select
-                  style={styles.select}
-                  value={form.appType}
-                  onChange={(e) => setForm({ ...form, appType: e.target.value })}
-                >
-                  <option value="" style={{ background: "#1e293b", color: "#94a3b8" }}>Select type</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Web Application</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Mobile App</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Enterprise System</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>SaaS Platform</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Microservices</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Legacy System</option>
-                </select>
-              </div>
-
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Environment</label>
-                <select
-                  style={styles.select}
-                  value={form.environment}
-                  onChange={(e) => setForm({ ...form, environment: e.target.value })}
-                >
-                  <option value="" style={{ background: "#1e293b", color: "#94a3b8" }}>Select environment</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Production</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Staging</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Development</option>
-                  <option style={{ background: "#1e293b", color: "white" }}>Internal</option>
-                </select>
-              </div>
-            </div>
-
-            <div style={styles.formRow}>
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Total User Base</label>
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div className="field">
+                <label className="field-label">Workspace name *</label>
                 <input
-                  style={styles.input}
-                  placeholder="e.g., 50,000 users"
-                  value={form.userBase}
-                  onChange={(e) => setForm({ ...form, userBase: e.target.value })}
+                  className="input"
+                  placeholder="e.g., Production Support Q1"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
                 />
               </div>
 
-              <div style={styles.formGroup}>
-                <label style={styles.label}>Monthly Incidents</label>
-                <input
-                  style={styles.input}
-                  placeholder="e.g., 200 incidents/month"
-                  value={form.incidentVolume}
-                  onChange={(e) => setForm({ ...form, incidentVolume: e.target.value })}
+              <div className="field">
+                <label className="field-label">Description</label>
+                <textarea
+                  className="textarea"
+                  placeholder="Brief description of this workspace's purpose"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field">
+                  <label className="field-label">Application type</label>
+                  <select
+                    className="select"
+                    value={form.appType}
+                    onChange={(e) => setForm({ ...form, appType: e.target.value })}
+                  >
+                    <option value="">Select type</option>
+                    {APP_TYPES.map((t) => (
+                      <option key={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="field">
+                  <label className="field-label">Environment</label>
+                  <select
+                    className="select"
+                    value={form.environment}
+                    onChange={(e) => setForm({ ...form, environment: e.target.value })}
+                  >
+                    <option value="">Select environment</option>
+                    {ENVIRONMENTS.map((t) => (
+                      <option key={t}>{t}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="field">
+                  <label className="field-label">Total user base</label>
+                  <input
+                    className="input"
+                    placeholder="e.g., 50,000 users"
+                    value={form.userBase}
+                    onChange={(e) => setForm({ ...form, userBase: e.target.value })}
+                  />
+                </div>
+                <div className="field">
+                  <label className="field-label">Monthly incidents</label>
+                  <input
+                    className="input"
+                    placeholder="e.g., 200 incidents/month"
+                    value={form.incidentVolume}
+                    onChange={(e) => setForm({ ...form, incidentVolume: e.target.value })}
+                  />
+                </div>
               </div>
             </div>
 
-            <div style={styles.modalActions}>
-              <button 
-                style={styles.modalPrimaryBtn} 
-                onClick={handleCreate}
-                disabled={!form.name.trim()}
-              >
-                Create Workspace
+            <div style={{ display: "flex", gap: 10, marginTop: 26 }}>
+              <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleCreate} disabled={!form.name.trim()}>
+                Create workspace
               </button>
-              <button 
-                style={styles.modalSecondaryBtn} 
-                onClick={() => setIsCreateOpen(false)}
-              >
+              <button className="btn btn-secondary" onClick={() => setIsCreateOpen(false)}>
                 Cancel
               </button>
             </div>
           </div>
         </div>
       )}
-      
+
+      {/* ERROR TOAST */}
       {error && (
-        <div style={styles.errorToast}>
+        <div
+          className="animate-fade-in"
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            background: "var(--surface-2)",
+            border: "1px solid var(--danger)",
+            color: "var(--danger)",
+            padding: "12px 18px",
+            borderRadius: "var(--radius-md)",
+            boxShadow: "var(--shadow-md)",
+            zIndex: 200,
+            fontSize: "var(--fs-sm)",
+            fontWeight: 500,
+          }}
+        >
           {error}
         </div>
       )}
@@ -443,510 +426,33 @@ if (isLoadingProjects) return (  // ✅ show spinner while fetching projects
   );
 }
 
-const styles: any = {
-  wrapper: {
-  minHeight: "100vh",
-  maxHeight: "100vh",        /* ✅ ADD — contains it to viewport */
-  overflowY: "auto",         /* ✅ dashboard scrolls internally */
-  overflowX: "hidden",       /* ✅ no horizontal overflow */
-  padding: "40px 60px",
-  background: "#0f172a",
-  color: "white",
-  position: "relative",
-},
+function StatCard({ icon, value, label }: { icon: React.ReactNode; value: React.ReactNode; label: string }) {
+  return (
+    <div className="metric-card" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <div className="state-icon" style={{ width: 38, height: 38, margin: 0, color: "var(--brand)" }}>
+        {icon}
+      </div>
+      <div>
+        <div className="metric-value" style={{ marginTop: 0, fontSize: "var(--fs-xl)" }}>
+          {value}
+        </div>
+        <div className="metric-label" style={{ textTransform: "none", letterSpacing: 0, fontWeight: 500 }}>
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-  bgGradient1: {
-    position: "absolute",
-    top: "-20%",
-    right: "-10%",
-    width: "600px",
-    height: "600px",
-    background: "radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%)",
-    borderRadius: "50%",
-    pointerEvents: "none",
-    zIndex: 0,
-  },
-  bgGradient2: {
-    position: "absolute",
-    bottom: "-30%",
-    left: "-15%",
-    width: "700px",
-    height: "700px",
-    background: "radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%)",
-    borderRadius: "50%",
-    pointerEvents: "none",
-    zIndex: 0,
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: "40px",
-    position: "relative",
-    zIndex: 1,
-  },
-  title: {
-    fontSize: "36px",
-    fontWeight: "700",
-    marginBottom: "8px",
-    background: "linear-gradient(135deg, #fff 0%, #e2e8f0 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-  },
-  subtitle: {
-    fontSize: "16px",
-    color: "#94a3b8",
-    fontWeight: "400",
-  },
-  primaryBtn: {
-    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-    border: "none",
-    padding: "12px 24px",
-    borderRadius: "10px",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "15px",
-    fontWeight: "600",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    transition: "all 0.3s ease",
-    boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-  },
-  btnIcon: {
-    fontSize: "18px",
-  },
-  secondaryBtn: {
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(148, 163, 184, 0.3)",
-    padding: "12px 24px",
-    borderRadius: "10px",
-    color: "#e2e8f0",
-    cursor: "pointer",
-    fontSize: "15px",
-    fontWeight: "500",
-    transition: "all 0.3s ease",
-  },
-  statsBar: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "20px",
-    marginBottom: "40px",
-    position: "relative",
-    zIndex: 1,
-  },
-  statCard: {
-    background: "rgba(255,255,255,0.05)",
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "16px",
-    padding: "24px",
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    transition: "all 0.3s ease",
-  },
-  statIcon: {
-    fontSize: "32px",
-  },
-  statValue: {
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "#fff",
-    lineHeight: "1",
-    marginBottom: "4px",
-  },
-  statLabel: {
-    fontSize: "13px",
-    color: "#94a3b8",
-    fontWeight: "500",
-  },
-  emptyContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    minHeight: "60vh",
-    position: "relative",
-    zIndex: 1,
-  },
-  emptyCard: {
-    background: "rgba(255,255,255,0.03)",
-    backdropFilter: "blur(20px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    padding: "60px",
-    borderRadius: "24px",
-    maxWidth: "1100px",
-    textAlign: "center",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-  },
-  emptyIcon: {
-    fontSize: "64px",
-    marginBottom: "24px",
-  },
-  emptyTitle: {
-    fontSize: "32px",
-    fontWeight: "700",
-    marginBottom: "16px",
-    color: "#fff",
-  },
-  emptyDescription: {
-    fontSize: "16px",
-    color: "#cbd5e1",
-    lineHeight: "1.6",
-    marginBottom: "48px",
-    maxWidth: "700px",
-    margin: "0 auto 48px",
-  },
-  workflow: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: "20px",
-    marginBottom: "48px",
-  },
-  workflowStep: {
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "16px",
-    padding: "24px 20px",
-    width: "180px",
-    position: "relative",
-  },
-  workflowNumber: {
-    position: "absolute",
-    top: "12px",
-    right: "12px",
-    width: "24px",
-    height: "24px",
-    borderRadius: "50%",
-    background: "rgba(59, 130, 246, 0.2)",
-    color: "#3b82f6",
-    fontSize: "12px",
-    fontWeight: "700",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  workflowIcon: {
-    fontSize: "36px",
-    marginBottom: "12px",
-  },
-  workflowTitle: {
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#fff",
-    marginBottom: "8px",
-  },
-  workflowDesc: {
-    fontSize: "13px",
-    color: "#94a3b8",
-    lineHeight: "1.4",
-  },
-  workflowArrow: {
-    fontSize: "24px",
-    color: "#475569",
-    fontWeight: "300",
-  },
-  benefits: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "32px",
-    marginBottom: "40px",
-  },
-  benefit: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "15px",
-    color: "#e2e8f0",
-  },
-  benefitIcon: {
-    color: "#22c55e",
-    fontSize: "18px",
-    fontWeight: "700",
-  },
-  ctaButton: {
-    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-    border: "none",
-    padding: "16px 48px",
-    borderRadius: "12px",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "17px",
-    fontWeight: "600",
-    boxShadow: "0 8px 24px rgba(59, 130, 246, 0.4)",
-    transition: "all 0.3s ease",
-  },
-  workspacesSection: {
-    position: "relative",
-    zIndex: 1,
-  },
-  sectionHeader: {
-    marginBottom: "32px",
-  },
-  sectionTitle: {
-    fontSize: "24px",
-    fontWeight: "700",
-    marginBottom: "8px",
-    color: "#fff",
-  },
-  sectionSubtitle: {
-    fontSize: "15px",
-    color: "#94a3b8",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-    gap: "24px",
-  },
-  card: {
-    background: "rgba(255,255,255,0.03)",
-    backdropFilter: "blur(10px)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    padding: "28px",
-    borderRadius: "20px",
-    transition: "all 0.3s ease",
-    display: "flex",
-    flexDirection: "column",
-    position: "relative",
-    overflow: "hidden",
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "20px",
-  },
-  cardIcon: {
-    fontSize: "40px",
-  },
-  statusBadge: {
-    padding: "6px 12px",
-    borderRadius: "20px",
-    fontSize: "12px",
-    fontWeight: "600",
-    border: "1px solid currentColor",
-  },
-  cardTitle: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#fff",
-    marginBottom: "12px",
-  },
-  cardDescription: {
-    fontSize: "14px",
-    color: "#94a3b8",
-    lineHeight: "1.6",
-    marginBottom: "24px",
-    minHeight: "40px",
-  },
-  cardStats: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    marginBottom: "24px",
-    padding: "16px",
-    background: "rgba(255,255,255,0.02)",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.05)",
-  },
-  cardStat: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    fontSize: "13px",
-    color: "#cbd5e1",
-  },
-  cardStatIcon: {
-    fontSize: "16px",
-  },
-  cardStatText: {
-    flex: 1,
-  },
-  cardActions: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    marginTop: "auto",
-  },
-  cardActionPrimary: {
-    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-    color: "white",
-    padding: "14px 20px",
-    borderRadius: "10px",
-    textDecoration: "none",
-    textAlign: "center",
-    fontWeight: "600",
-    fontSize: "15px",
-    transition: "all 0.3s ease",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "8px",
-  },
-  actionIcon: {
-    fontSize: "18px",
-  },
-  cardActionSecondary: {
-    display: "flex",
-    gap: "12px",
-  },
-  iconLink: {
-    flex: 1,
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    color: "white",
-    padding: "12px",
-    borderRadius: "10px",
-    textDecoration: "none",
-    textAlign: "center",
-    fontSize: "20px",
-    transition: "all 0.3s ease",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.7)",
-    backdropFilter: "blur(4px)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    background: "#1e293b",
-    border: "1px solid rgba(255,255,255,0.1)",
-    padding: "40px",
-    borderRadius: "24px",
-    width: "560px",
-    maxHeight: "90vh",
-    overflowY: "auto",
-    boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
-  },
-  modalHeader: {
-    marginBottom: "32px",
-  },
-  modalTitle: {
-    fontSize: "28px",
-    fontWeight: "700",
-    marginBottom: "8px",
-    color: "#fff",
-  },
-  modalSubtitle: {
-    fontSize: "14px",
-    color: "#94a3b8",
-  },
-  formGroup: {
-    marginBottom: "24px",
-    width: "100%",
-  },
-  formRow: {
-    display: "flex",
-    gap: "16px",
-  },
-  label: {
-    display: "block",
-    fontSize: "14px",
-    fontWeight: "600",
-    color: "#e2e8f0",
-    marginBottom: "8px",
-  },
-  input: {
-    width: "100%",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "10px",
-    padding: "12px 16px",
-    color: "white",
-    fontSize: "15px",
-    outline: "none",
-    transition: "all 0.3s ease",
-    boxSizing: "border-box",
-    // Fix for select dropdowns
-    WebkitAppearance: "none",
-    MozAppearance: "none",
-    appearance: "none",
-  },
-  select: {
-    width: "100%",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "10px",
-    padding: "12px 16px",
-    color: "white",
-    fontSize: "15px",
-    outline: "none",
-    transition: "all 0.3s ease",
-    boxSizing: "border-box",
-    cursor: "pointer",
-    // Custom arrow
-    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E")`,
-    backgroundRepeat: "no-repeat",
-    backgroundPosition: "right 16px center",
-    paddingRight: "40px",
-  },
-  textarea: {
-    minHeight: "100px",
-    resize: "vertical",
-    fontFamily: "inherit",
-  },
-  modalActions: {
-    display: "flex",
-    gap: "12px",
-    marginTop: "32px",
-  },
-  modalPrimaryBtn: {
-    flex: 1,
-    background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-    border: "none",
-    padding: "14px 24px",
-    borderRadius: "10px",
-    color: "white",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "600",
-    transition: "all 0.3s ease",
-  },
-  modalSecondaryBtn: {
-    flex: 1,
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    padding: "14px 24px",
-    borderRadius: "10px",
-    color: "#e2e8f0",
-    cursor: "pointer",
-    fontSize: "16px",
-    fontWeight: "500",
-    transition: "all 0.3s ease",
-  },
-  errorToast: {
-    position: "fixed",
-    bottom: "32px",
-    right: "32px",
-    background: "#ef4444",
-    color: "white",
-    padding: "16px 24px",
-    borderRadius: "12px",
-    boxShadow: "0 8px 24px rgba(239, 68, 68, 0.4)",
-    zIndex: 2000,
-  },
-  deleteBtn: {
-  flex: 1,
-  background: "rgba(239,68,68,0.08)",
-  border: "1px solid rgba(239,68,68,0.2)",
-  color: "#ef4444",
-  padding: "12px",
-  borderRadius: "10px",
-  cursor: "pointer",
-  fontSize: "18px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  transition: "all 0.2s ease",
-},
-
-};
-
+function WorkflowStep({ n, icon, title, desc }: { n: number; icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div style={{ padding: 14, borderRadius: "var(--radius-md)", background: "var(--surface-1)", border: "1px solid var(--border-subtle)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, color: "var(--brand)" }}>
+        <span style={{ fontSize: "var(--fs-xs)", fontWeight: 700, color: "var(--text-tertiary)" }}>{n}</span>
+        {icon}
+      </div>
+      <div style={{ fontSize: "var(--fs-sm)", fontWeight: 600, marginBottom: 2 }}>{title}</div>
+      <div style={{ fontSize: "var(--fs-xs)", color: "var(--text-tertiary)" }}>{desc}</div>
+    </div>
+  );
+}

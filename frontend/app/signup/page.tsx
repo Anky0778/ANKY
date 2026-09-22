@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Sparkles, ShieldCheck, Zap, BookOpen, Mail, Lock, User, Building2, Briefcase, AlertCircle, CheckCircle2, Circle, Check, Eye, EyeOff, ArrowRight } from "lucide-react";
 import "./signup.css";
 
 export default function SignupPage() {
@@ -163,7 +164,7 @@ export default function SignupPage() {
         {/* Left Side - Brand Section */}
         <div className="signup-brand">
           <div className="signup-brand-content">
-            <span className="brand-badge">✨ Join the Future of Incident Management</span>
+            <span className="brand-badge"><Sparkles size={14} /> Join the Future of Incident Management</span>
             
             <h1>
               Streamline your<br />
@@ -179,19 +180,19 @@ export default function SignupPage() {
             {/* Feature List */}
             <div className="brand-features">
               <div className="feature-item">
-                <div className="feature-icon">🚀</div>
+                <div className="feature-icon"><Zap size={18} /></div>
                 <span className="feature-text">AI-powered root cause analysis</span>
               </div>
               <div className="feature-item">
-                <div className="feature-icon">📚</div>
+                <div className="feature-icon"><BookOpen size={18} /></div>
                 <span className="feature-text">Instant access to historical incidents</span>
               </div>
               <div className="feature-item">
-                <div className="feature-icon">⚡</div>
+                <div className="feature-icon"><Zap size={18} /></div>
                 <span className="feature-text">50% faster incident resolution</span>
               </div>
               <div className="feature-item">
-                <div className="feature-icon">🔒</div>
+                <div className="feature-icon"><ShieldCheck size={18} /></div>
                 <span className="feature-text">Enterprise-grade security</span>
               </div>
             </div>
@@ -222,12 +223,11 @@ export default function SignupPage() {
         <div className="signup-card">
           <div className="signup-card-header">
             <div className="logo-wrapper">
-              <div className="logo-glow"></div>
               <Image 
                 src="/anky_logo.png"
                 alt="ANKY Logo"
-                width={130}
-                height={130}
+                width={64}
+                height={64}
                 priority
               />
             </div>
@@ -238,13 +238,13 @@ export default function SignupPage() {
           {/* Messages */}
           {error && (
             <div className="error-message">
-              <span>⚠️</span> {error}
+              <AlertCircle size={16} /> {error}
             </div>
           )}
           
           {success && (
             <div className="success-message">
-              <span>✓</span> {success}
+              <CheckCircle2 size={16} /> {success}
             </div>
           )}
 
@@ -254,7 +254,7 @@ export default function SignupPage() {
             <div className="form-group">
               <label htmlFor="fullName">Full Name</label>
               <div className="input-wrapper">
-                <span className="input-icon">👤</span>
+                <span className="input-icon"><User size={16} /></span>
                 <input
                   type="text"
                   id="fullName"
@@ -272,7 +272,7 @@ export default function SignupPage() {
             <div className="form-group">
               <label htmlFor="email">Work Email</label>
               <div className="input-wrapper">
-                <span className="input-icon">✉️</span>
+                <span className="input-icon"><Mail size={16} /></span>
                 <input
                   type="email"
                   id="email"
@@ -290,7 +290,7 @@ export default function SignupPage() {
             <div className="form-group">
               <label htmlFor="password">Password</label>
               <div className="input-wrapper">
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"><Lock size={16} /></span>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
@@ -309,17 +309,7 @@ export default function SignupPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
                 >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68197 3.96914 7.65663 6.06 6.06M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2047 20.84 15.19M14.12 14.12C13.8454 14.4147 13.5141 14.6512 13.1462 14.8151C12.7782 14.9791 12.3809 15.0673 11.9781 15.0744C11.5753 15.0815 11.1752 15.0074 10.8016 14.8565C10.4281 14.7056 10.0887 14.4811 9.80385 14.1962C9.51897 13.9113 9.29439 13.5719 9.14351 13.1984C8.99262 12.8248 8.91853 12.4247 8.92563 12.0219C8.93274 11.6191 9.02091 11.2218 9.18488 10.8538C9.34884 10.4858 9.58525 10.1546 9.88 9.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
               
@@ -345,16 +335,16 @@ export default function SignupPage() {
               {showRequirements && (
                 <div className="password-requirements">
                   <div className={`requirement-item ${formData.password.length >= 8 ? 'met' : ''}`}>
-                    {formData.password.length >= 8 ? '✓' : '○'} At least 8 characters
+                    {formData.password.length >= 8 ? <Check size={13} /> : <Circle size={13} />} At least 8 characters
                   </div>
                   <div className={`requirement-item ${/\d/.test(formData.password) ? 'met' : ''}`}>
-                    {/\d/.test(formData.password) ? '✓' : '○'} Contains a number
+                    {/\d/.test(formData.password) ? <Check size={13} /> : <Circle size={13} />} Contains a number
                   </div>
                   <div className={`requirement-item ${/[!@#$%^&*]/.test(formData.password) ? 'met' : ''}`}>
-                    {/[!@#$%^&*]/.test(formData.password) ? '✓' : '○'} Contains a special character
+                    {/[!@#$%^&*]/.test(formData.password) ? <Check size={13} /> : <Circle size={13} />} Contains a special character
                   </div>
                   <div className={`requirement-item ${/[A-Z]/.test(formData.password) ? 'met' : ''}`}>
-                    {/[A-Z]/.test(formData.password) ? '✓' : '○'} Contains an uppercase letter
+                    {/[A-Z]/.test(formData.password) ? <Check size={13} /> : <Circle size={13} />} Contains an uppercase letter
                   </div>
                 </div>
               )}
@@ -365,7 +355,7 @@ export default function SignupPage() {
               <div className="form-group">
                 <label htmlFor="company">Company</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">🏢</span>
+                  <span className="input-icon"><Building2 size={16} /></span>
                   <input
                     type="text"
                     id="company"
@@ -382,7 +372,7 @@ export default function SignupPage() {
               <div className="form-group">
                 <label htmlFor="role">Role</label>
                 <div className="input-wrapper">
-                  <span className="input-icon">👔</span>
+                  <span className="input-icon"><Briefcase size={16} /></span>
                   <select
                     id="role"
                     name="role"
@@ -410,7 +400,7 @@ export default function SignupPage() {
                   Creating account...
                 </>
               ) : (
-                "Create account →"
+                <>Create account <ArrowRight size={16} /></>
               )}
             </button>
 

@@ -1,18 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { UploadCloud, FileSpreadsheet, X, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { uploadIncidents } from "app/services/incidents";
 import { fetchProjectById } from "app/services/projects";
-import { useParams } from "next/navigation";
 
 export default function IncidentsPage() {
   const params = useParams();
   const projectId = params.projectId as string;
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [project, setProject] = useState<any>(null);
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     fetchProjectById(projectId).then(setProject);
@@ -20,160 +23,149 @@ export default function IncidentsPage() {
 
   async function handleUpload() {
     if (!file) {
-      setStatus("Please select an incident file.");
+      setStatus({ type: "error", text: "Please select an incident file." });
       return;
     }
-
     try {
       setIsUploading(true);
-      setStatus("");
-
+      setStatus(null);
       await uploadIncidents(projectId, file);
-
-      setStatus("Incidents uploaded successfully.");
+      setStatus({ type: "success", text: "Incidents uploaded successfully." });
       setFile(null);
-      setIsUploading(false);
-
     } catch (e: any) {
-      setStatus(e.response?.data?.detail || "Upload failed.");
+      setStatus({ type: "error", text: e.response?.data?.detail || "Upload failed. Please try again." });
+    } finally {
       setIsUploading(false);
     }
   }
 
-  if (!project) return <div style={{ padding: "40px" }}>Loading...</div>;
+  if (!project) {
+    return (
+      <div className="page" style={{ maxWidth: 780, margin: "0 auto" }}>
+        <div className="skeleton" style={{ height: 24, width: 260, marginBottom: 24 }} />
+        <div className="skeleton" style={{ height: 220, borderRadius: "var(--radius-lg)" }} />
+      </div>
+    );
+  }
 
   const alreadyTrained = project.is_trained;
 
   return (
-    <div style={styles.wrapper}>
-      <h2>Historical Incident Data</h2>
+    <div className="page" style={{ maxWidth: 780, margin: "0 auto" }}>
+      <h1 className="page-title" style={{ marginBottom: 4 }}>Historical incident data</h1>
+      <p className="page-subtitle" style={{ marginBottom: 20 }}>
+        Import past incidents so ANKY can learn resolution patterns and root causes.
+      </p>
 
-      {/* TRAINING STATE BANNER */}
       <div
-        style={{
-          ...styles.banner,
-          background: alreadyTrained
-            ? "rgba(34,197,94,0.15)"
-            : "rgba(234,179,8,0.15)",
-        }}
+        className={`badge ${alreadyTrained ? "badge-warning" : "badge-info"}`}
+        style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", marginBottom: 20, borderRadius: "var(--radius-md)" }}
       >
-        {alreadyTrained
-          ? "Intelligence already trained. Uploading new incident data requires retraining."
-          : "Upload historical incidents before running intelligence training."}
+        <Info size={14} style={{ marginTop: 2, flexShrink: 0 }} />
+        <span style={{ fontWeight: 500 }}>
+          {alreadyTrained
+            ? "Intelligence is already trained. Uploading new incident data will require retraining."
+            : "Upload historical incidents before running intelligence training."}
+        </span>
       </div>
 
-      {/* FORMAT GUIDANCE */}
-      <div style={styles.infoCard}>
-        <h4>Expected File Format</h4>
-        <ul style={{ opacity: 0.8, fontSize: "14px" }}>
-          <li>CSV/Xlsx file recommended</li>
-          <li>Columns: Number,Description ,Long Description,RootCause,Resolution Notes
-</li>
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="section-title" style={{ marginBottom: 10 }}>Expected file format</div>
+        <ul className="section-text" style={{ paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+          <li>CSV or XLSX file recommended</li>
+          <li>Columns: Number, Description, Long Description, Root Cause, Resolution Notes</li>
           <li>UTF-8 encoding</li>
         </ul>
       </div>
 
-      {/* UPLOAD CARD */}
-      <div style={styles.card}>
+      <div className="card">
         <div
-          style={styles.dropZone}
-          onClick={() => document.getElementById("incidentInput")?.click()}
+          onClick={() => inputRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+            if (e.dataTransfer.files?.[0]) { setFile(e.dataTransfer.files[0]); setStatus(null); }
+          }}
+          style={{
+            border: `2px dashed ${isDragging ? "var(--brand)" : "var(--border-default)"}`,
+            background: isDragging ? "var(--brand-subtle)" : "var(--surface-1)",
+            borderRadius: "var(--radius-lg)",
+            padding: "40px 20px",
+            textAlign: "center",
+            cursor: "pointer",
+            marginBottom: 20,
+            transition: "border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease)",
+          }}
         >
-          <p style={{ marginBottom: "6px", fontWeight: 600 }}>
-            Upload Incident File (CSV)
-          </p>
-          <span style={{ opacity: 0.6, fontSize: "14px" }}>
-            Click to browse
-          </span>
-
+          <div className="state-icon" style={{ margin: "0 auto 14px", color: "var(--brand)" }}>
+            <UploadCloud size={22} />
+          </div>
+          <p style={{ fontWeight: 600, marginBottom: 4 }}>Upload incident file</p>
+          <span className="text-faint" style={{ fontSize: "var(--fs-sm)" }}>CSV or XLSX · click or drag to browse</span>
           <input
-            id="incidentInput"
+            ref={inputRef}
             type="file"
-            accept=".csv"
+            accept=".csv,.xlsx"
             style={{ display: "none" }}
-            onChange={(e) =>
-              setFile(e.target.files?.[0] || null)
-            }
+            onChange={(e) => { setFile(e.target.files?.[0] || null); setStatus(null); }}
           />
         </div>
 
         {file && (
-          <div style={styles.fileItem}>
-            Selected: {file.name}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 12px",
+              background: "var(--surface-1)",
+              border: "1px solid var(--border-subtle)",
+              borderRadius: "var(--radius-md)",
+              marginBottom: 20,
+            }}
+          >
+            <FileSpreadsheet size={16} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
+            <span className="truncate" style={{ flex: 1, fontSize: "var(--fs-sm)" }}>{file.name}</span>
+            <button onClick={() => setFile(null)} className="btn btn-ghost btn-icon" style={{ height: 26, width: 26 }} title="Remove">
+              <X size={14} />
+            </button>
           </div>
         )}
 
-        <button
-          onClick={handleUpload}
-          disabled={isUploading}
-          style={{
-            ...styles.primaryButton,
-            opacity: isUploading ? 0.6 : 1,
-          }}
-        >
-          {isUploading ? "Uploading..." : "Upload Incidents"}
+        <button className="btn btn-primary btn-block" onClick={handleUpload} disabled={isUploading || !file}>
+          {isUploading ? (
+            <>
+              <span className="spinner" /> Uploading…
+            </>
+          ) : (
+            <>
+              <UploadCloud size={16} /> Upload incidents
+            </>
+          )}
         </button>
 
         {status && (
-          <div style={styles.statusBox}>
-            {status}
+          <div
+            style={{
+              marginTop: 16,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "10px 14px",
+              borderRadius: "var(--radius-md)",
+              background: status.type === "success" ? "var(--success-subtle)" : "var(--danger-subtle)",
+              color: status.type === "success" ? "var(--success)" : "var(--danger)",
+              fontSize: "var(--fs-sm)",
+              fontWeight: 500,
+            }}
+          >
+            {status.type === "success" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+            {status.text}
           </div>
         )}
       </div>
     </div>
   );
 }
-
-const styles: any = {
-  wrapper: {
-    padding: "40px",
-    maxWidth: "900px",
-  },
-  banner: {
-    padding: "15px",
-    borderRadius: "12px",
-    marginBottom: "20px",
-  },
-  infoCard: {
-    background: "rgba(255,255,255,0.05)",
-    padding: "20px",
-    borderRadius: "16px",
-    marginBottom: "25px",
-  },
-  card: {
-    background: "rgba(255,255,255,0.05)",
-    padding: "30px",
-    borderRadius: "16px",
-  },
-  dropZone: {
-    border: "2px dashed rgba(255,255,255,0.2)",
-    padding: "40px",
-    borderRadius: "16px",
-    textAlign: "center",
-    cursor: "pointer",
-    background: "rgba(255,255,255,0.03)",
-    marginBottom: "20px",
-  },
-  fileItem: {
-    padding: "10px",
-    background: "rgba(255,255,255,0.05)",
-    borderRadius: "8px",
-    marginBottom: "15px",
-    fontSize: "14px",
-  },
-  primaryButton: {
-    background: "linear-gradient(90deg,#3b82f6,#2563eb)",
-    border: "none",
-    padding: "12px 20px",
-    borderRadius: "10px",
-    color: "white",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  statusBox: {
-    marginTop: "15px",
-    padding: "12px",
-    background: "rgba(59,130,246,0.1)",
-    borderRadius: "12px",
-  },
-};

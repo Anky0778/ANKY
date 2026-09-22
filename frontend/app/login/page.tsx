@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Sparkles, Mail, Lock, AlertCircle, CheckCircle2, Eye, EyeOff, ArrowRight } from "lucide-react";
 import "./login.css";
 
 export default function LoginPage() {
@@ -109,7 +110,7 @@ export default function LoginPage() {
         {/* Left Side - Brand Section */}
         <div className="login-brand">
           <div className="login-brand-content">
-            <span className="brand-badge">🚀 AI-Powered Incident Intelligence</span>
+            <span className="brand-badge"><Sparkles size={14} /> AI-Powered Incident Intelligence</span>
             
             <h1>
               Welcome back to<br />
@@ -143,12 +144,11 @@ export default function LoginPage() {
         <div className="login-card">
           <div className="login-card-header">
             <div className="logo-wrapper">
-              <div className="logo-glow"></div>
               <Image 
                 src="/anky_logo.png"
                 alt="ANKY Logo"
-                width={130}
-                height={130}
+                width={72}
+                height={72}
                 priority
               />
             </div>
@@ -159,13 +159,13 @@ export default function LoginPage() {
           {/* Messages */}
           {error && (
             <div className="error-message">
-              <span>⚠️</span> {error}
+              <AlertCircle size={16} /> {error}
             </div>
           )}
           
           {success && (
             <div className="success-message">
-              <span>✓</span> {success}
+              <CheckCircle2 size={16} /> {success}
             </div>
           )}
 
@@ -175,7 +175,7 @@ export default function LoginPage() {
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <div className="input-wrapper">
-                <span className="input-icon">✉️</span>
+                <span className="input-icon"><Mail size={16} /></span>
                 <input
                   type="email"
                   id="email"
@@ -193,7 +193,7 @@ export default function LoginPage() {
             <div className="form-group">
               <label htmlFor="password">Password</label>
               <div className="input-wrapper">
-                <span className="input-icon">🔒</span>
+                <span className="input-icon"><Lock size={16} /></span>
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
@@ -210,17 +210,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   tabIndex={-1}
                 >
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.94 17.94C16.2306 19.243 14.1491 19.9649 12 20C5 20 1 12 1 12C2.24389 9.68197 3.96914 7.65663 6.06 6.06M9.9 4.24C10.5883 4.07888 11.2931 3.99834 12 4C19 4 23 12 23 12C22.393 13.1356 21.6691 14.2047 20.84 15.19M14.12 14.12C13.8454 14.4147 13.5141 14.6512 13.1462 14.8151C12.7782 14.9791 12.3809 15.0673 11.9781 15.0744C11.5753 15.0815 11.1752 15.0074 10.8016 14.8565C10.4281 14.7056 10.0887 14.4811 9.80385 14.1962C9.51897 13.9113 9.29439 13.5719 9.14351 13.1984C8.99262 12.8248 8.91853 12.4247 8.92563 12.0219C8.93274 11.6191 9.02091 11.2218 9.18488 10.8538C9.34884 10.4858 9.58525 10.1546 9.88 9.88" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      <path d="M1 1L23 23" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
@@ -253,14 +243,14 @@ export default function LoginPage() {
                   Signing in...
                 </>
               ) : (
-                "Sign in →"
+                <>Sign in <ArrowRight size={16} /></>
               )}
             </button>
 
             {/* Signup Link */}
             <div className="signup-prompt">
               <p>
-                Don't have an account?{' '}
+                Don&apos;t have an account?{' '}
                 <Link href="/signup" className="signup-link">
                   Create free account
                 </Link>
