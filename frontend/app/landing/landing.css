@@ -39,8 +39,7 @@
 .aurora {
   position: absolute;
   border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.35;
+  filter: blur(110px);
   will-change: transform;
 }
 
@@ -50,7 +49,8 @@
   top: -220px;
   left: -120px;
   background: radial-gradient(circle at 30% 30%, #4f7cff, transparent 70%);
-  animation: drift-1 22s ease-in-out infinite;
+  opacity: 0.16;
+  animation: drift-1 34s ease-in-out infinite;
 }
 
 .aurora-2 {
@@ -59,7 +59,8 @@
   top: -120px;
   right: -160px;
   background: radial-gradient(circle at 60% 40%, #7c5cff, transparent 70%);
-  animation: drift-2 26s ease-in-out infinite;
+  opacity: 0.13;
+  animation: drift-2 38s ease-in-out infinite;
 }
 
 .aurora-3 {
@@ -68,8 +69,8 @@
   top: 620px;
   left: 40%;
   background: radial-gradient(circle at 50% 50%, #2fb872, transparent 70%);
-  opacity: 0.14;
-  animation: drift-3 30s ease-in-out infinite;
+  opacity: 0.07;
+  animation: drift-3 42s ease-in-out infinite;
 }
 
 @keyframes drift-1 {
@@ -214,17 +215,11 @@
 }
 
 .hero-gradient-text {
-  background: linear-gradient(90deg, #4f7cff, #a78bfa, #4f7cff);
-  background-size: 200% auto;
+  background: linear-gradient(100deg, #6690ff, #a78bfa 65%, #6690ff);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: gradient-shift 6s linear infinite;
   display: inline-block;
-}
-
-@keyframes gradient-shift {
-  to { background-position: 200% center; }
 }
 
 .hero p {
@@ -310,6 +305,14 @@
   font-size: 12.5px;
 }
 
+.flow-icon-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* =========================================================
    Stats — tilt cards
    ========================================================= */
@@ -339,7 +342,7 @@
   border-radius: inherit;
   padding: 1px;
   background: radial-gradient(180px circle at var(--mx, 50%) var(--my, 50%),
-    rgba(79, 124, 255, 0.55), transparent 60%);
+    rgba(79, 124, 255, 0.4), transparent 60%);
   opacity: 0;
   transition: opacity var(--t-normal) var(--ease);
   pointer-events: none;
@@ -626,25 +629,14 @@
 .cta-box::before {
   content: "";
   position: absolute;
-  inset: -1px;
+  inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: conic-gradient(from var(--angle, 0deg), transparent 0 70%, rgba(79, 124, 255, 0.9), transparent 100%);
+  background: linear-gradient(180deg, rgba(79, 124, 255, 0.4), rgba(79, 124, 255, 0) 40%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: spin-border 5s linear infinite;
   pointer-events: none;
-}
-
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
-
-@keyframes spin-border {
-  to { --angle: 360deg; }
 }
 
 .cta-icon-ring {
